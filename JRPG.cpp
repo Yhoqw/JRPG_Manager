@@ -41,7 +41,7 @@ void Character :: Display_character(){
 };
 
 //function for generating Party Members
-void generate_character(){
+Character generate_character(){
 	
 	Character NPC;
 	
@@ -50,6 +50,28 @@ void generate_character(){
 	NPC.Backstory = backstories[rand() % backstories.size()]; 
 	
 	NPC.Display_character();
+	
+	return (NPC);
+};
+
+// Function to save NPC details to a file
+void save_NPCs(Character NPC) {
+    ofstream outfile("NPC_data.txt", ios::app); // Open file in append mode
+
+    if (outfile) 
+	{
+        outfile << "Name: " << NPC.name << endl;
+        outfile << "Class: " << NPC.Class << endl;
+        outfile << "Backstory: " << NPC.Backstory << endl;
+        outfile << "---------------------------" << endl;
+        outfile.close();
+        cout << "NPC details saved successfully!" << endl;
+    }
+	 
+	else 
+	{
+        cout << "Error: Unable to open file for writing." << endl;
+    }
 };
 
 int main(){ 
@@ -63,8 +85,14 @@ int main(){
 	cout << "Press 1 to generate a characeter" << endl;
 	cin >> input;
 	
-	if (input == 1){
-		generate_character();
+	if (input == 1)
+	{
+		//Generate 20 NPCs
+		for (int i = 1; i <= 20; i++)
+		{
+			Character new_NPC = generate_character();
+			save_NPCs(new_NPC);
+		}
 	}
 	
 	return (0);
