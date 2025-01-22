@@ -22,7 +22,7 @@ vector<string> backstories = {
         "A summoner seeking the ancient powers of lost gods."
 };
 
-//class that holds data held by each charcter object
+//class that holds data held by each character object
 class Character {	
 	public:
 		string name;	
@@ -82,7 +82,7 @@ int main(){
 	//console output
 	int input;
 	
-	cout << "Press 1 to generate a characeter" << endl;
+	cout << "Press 1 to generate a character" << endl;
 	cin >> input;
 	
 	if (input == 1)
