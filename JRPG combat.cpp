@@ -10,33 +10,50 @@ using namespace std;
 //JRPG Combat Mechanics
 
 //ADD Turn Manager
-//ENUM for switch statement
+//implement SPD and DEF in attack calculation
 
 //function for displaying all stats
-int Display_stats(int player_HP, int enemy_HP)
+void Display_stats(int player_HP, int enemy_HP)
 {
 	cout << "\nHP: " << player_HP  << "\n" "Enemy HP: " << enemy_HP << endl;		
 };
 
 //Attack Action
-void Attack(int &HP, int &ATK)
+void Attack_Check(int &HP, int ATK, int DEF)
 {
-	HP -= ATK;
+	int damage = ATK - DEF;
+	
+	//in case damage gives a negative number
+	if (damage < 0)
+	{
+		damage = 0;
+	}
+	
+	HP -= damage;
 }
 
 int main(){
 	
 	//variables
 	int player_HP = 100, enemy_HP = 50;
-	int player_ATK = 20, player_SPD = 10, player_DEF = 10;
-	int enemy_ATK = 20, enemy_SPD = 10, enemy_DEF = 10;
+	int player_ATK = 20, player_SPD = 10, player_DEF = 0;
+	int enemy_ATK = 20, enemy_SPD = 10, enemy_DEF = 0;
 	bool players_turn = true;
 
 	int input;
 	
 	Display_stats(player_HP, enemy_HP);	
 
-	while (enemy_HP > 0){
+	//player Actions
+	enum Actions{
+		Attack = 1,
+		SPD_UP,
+		DEF_UP,
+		ATK_UP,
+		Heal
+	};
+
+	while (enemy_HP > 0 && player_HP > 0){
 		
 		//Players Turn
 		if (players_turn == true)
@@ -49,13 +66,13 @@ int main(){
 			{
 				case Attack:
 				{
-					Attack(enemy_HP, player_ATK);
+					Attack_Check(enemy_HP, player_ATK, enemy_DEF);
 					Display_stats(player_HP, enemy_HP);
 					players_turn = false;
 					break;
 				}
 				
-				case 2:
+				case SPD_UP:
 				{
 					player_SPD += 5;
 					Display_stats(player_HP, enemy_HP);
@@ -63,7 +80,7 @@ int main(){
 					break;
 				}
 				
-				case 3:
+				case DEF_UP:
 				{
 					player_DEF += 5;
 					Display_stats(player_HP, enemy_HP);
@@ -71,7 +88,7 @@ int main(){
 					break;
 				}
 				
-				case 4:
+				case ATK_UP:
 				{
 					player_ATK += 5;
 					Display_stats(player_HP, enemy_HP);
@@ -79,31 +96,38 @@ int main(){
 					break;
 				}
 
-				case 5:
+				case Heal:
 				{
 					player_HP += 30;
 					Display_stats(player_HP, enemy_HP);
 					players_turn = false;
 					break;
-				}													
+				}
+				
+                default: 
+				{
+                    cout << "Invalid choice! Try again." << endl;
+                    break;
+            	}
+																
 			}
 			
 		}
 		
 		//Enemy Turn
-		if (players_turn != true)
-		{
-			Attack(player_HP, enemy_ATK);
+		if (players_turn != true && enemy_HP > 0)
+		{	
+			Attack_Check(player_HP, enemy_ATK, player_DEF);
 			Display_stats(player_HP, enemy_HP);
 			players_turn = true;
 		}
 	}
 	
-	if (enemy_HP <= 0){
-		
-		cout << "player wins";
-		
-	}
+	if (enemy_HP <= 0)
+	{	cout << "player wins";	}
+	
+	if (player_HP <= 0)
+	{	cout << "player losses";}
 	
 	return(0);	
 };

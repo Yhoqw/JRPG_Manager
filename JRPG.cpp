@@ -7,10 +7,15 @@
 
 using namespace std;
 
+//TODO: Implement HP, SPD, DEF
+//Tweak Backstories
+//First and Last names
+
 //JRPG Character generator 
 string names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris"};
 string classes[] = {"Fighter", "Mage", "Thief" , "Ranger" , "Healer"};
 
+//need to change these
 vector<string> backstories = {
         "A mysterious warrior with a hidden past.",
         "A young mage seeking to master the elemental forces.",
@@ -22,11 +27,12 @@ vector<string> backstories = {
         "A summoner seeking the ancient powers of lost gods."
 };
 
-//class that holds data held by each character object
+//class that holds data held by each charcter object
 class Character {	
 	public:
 		string name;	
 		string Class;
+		int HP, ATK, SPD, DEF;
 		string Backstory;
 		
 		void Display_character();
@@ -56,8 +62,7 @@ Character generate_character(){
 
 // Function to save NPC details to a file
 void save_NPCs(Character NPC) {
-    ofstream outfile("NPC_data.txt", ios::app); // Open file in append mode
-
+    ofstream outfile("NPC_data.txt", ios::app); 
     if (outfile) 
 	{
         outfile << "Name: " << NPC.name << endl;
@@ -82,7 +87,7 @@ int main(){
 	//console output
 	int input;
 	
-	cout << "Press 1 to generate a character" << endl;
+	cout << "Press 1 to generate a characeter" << endl;
 	cin >> input;
 	
 	if (input == 1)
