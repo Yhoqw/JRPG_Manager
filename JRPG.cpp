@@ -7,12 +7,11 @@
 
 using namespace std;
 
-//TODO: Implement HP, SPD, DEF
 //Tweak Backstories
-//First and Last names
 
 //JRPG Character generator 
-string names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris"};
+string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro"};
+string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi"};
 string classes[] = {"Fighter", "Mage", "Thief" , "Ranger" , "Healer"};
 
 //need to change these
@@ -27,12 +26,12 @@ vector<string> backstories = {
         "A summoner seeking the ancient powers of lost gods."
 };
 
-//class that holds data held by each charcter object
+//class that holds data held by each character object
 class Character {	
 	public:
 		string name;	
 		string Class;
-		int HP, ATK, SPD, DEF;
+		int HP = 100, ATK, SPD, DEF;
 		string Backstory;
 		
 		void Display_character();
@@ -43,7 +42,8 @@ void Character :: Display_character(){
 	
 	cout << "Name: " << name << endl;
 	cout << "Class: " << Class << endl;
-	cout << "Backstory: " << Backstory << endl;
+	//cout << "Backstory: " << Backstory << endl;
+	cout << "ATK:" << ATK << " |SPD:" << SPD << " |DEF:" << DEF << endl;
 };
 
 //function for generating Party Members
@@ -51,9 +51,14 @@ Character generate_character(){
 	
 	Character NPC;
 	
-	NPC.name = names[rand() % (sizeof(names) / sizeof(names[0]))];
+	NPC.name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
 	NPC.Class = classes[rand() % (sizeof(classes) / sizeof(classes[0]))];
 	NPC.Backstory = backstories[rand() % backstories.size()]; 
+	
+	//NPC.HP = (rand() % 100)+ 1
+	NPC.ATK = (rand() % 20) + 1;
+	NPC.SPD = (rand() % 10);
+	NPC.DEF = (rand() % 10);
 	
 	NPC.Display_character();
 	
@@ -67,7 +72,8 @@ void save_NPCs(Character NPC) {
 	{
         outfile << "Name: " << NPC.name << endl;
         outfile << "Class: " << NPC.Class << endl;
-        outfile << "Backstory: " << NPC.Backstory << endl;
+        //outfile << "Backstory: " << NPC.Backstory << endl;
+        outfile << "ATK:" << NPC.ATK << " SPD:" << NPC.SPD << " DEF:" << NPC.DEF << endl;
         outfile << "---------------------------" << endl;
         outfile.close();
         cout << "NPC details saved successfully!" << endl;

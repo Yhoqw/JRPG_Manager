@@ -7,44 +7,52 @@
 
 using namespace std;
 
-//JRPG Combat Mechanics
-
-//ADD Turn Manager
-//implement SPD and DEF in attack calculation
-
-//function for displaying all stats
-void Display_stats(int player_HP, int enemy_HP)
-{
-	cout << "\nHP: " << player_HP  << "\n" "Enemy HP: " << enemy_HP << endl;		
+//Character Class
+class Character {
+	public:
+		string name;	
+		int HP = 100, ATK = 20, SPD = 10, DEF = 0;
+		bool Turn = true;
 };
 
-//Attack Action
-void Attack_Check(int &HP, int ATK, int DEF)
+//function for displaying all stats
+void Display_stats(Character NPC1, Character NPC2)
 {
-	int damage = ATK - DEF;
-	
-	//in case damage gives a negative number
-	if (damage < 0)
+	cout << "\nHP: " << NPC1.HP  << "\n" "Enemy HP: " << NPC2.HP << endl;		
+};
+
+//Attack Action function
+void Attack_Check(Character &NPC1, Character &NPC2)
+{
+	//Check whether the hit lands (based on SPD)
+    int Hit_chance = rand() % 100;
+    int Hit_threshold = 100 - NPC2.SPD; 
+    
+    //Damage calculation
+    if (Hit_chance < Hit_threshold)
 	{
-		damage = 0;
+		int damage = NPC1.ATK - NPC2.DEF;
+	
+		//in case damage gives a negative number
+		if (damage < 0) {	damage = 0;	}
+		
+		NPC2.HP -= damage;
+			
+		//Ensure HP does not go below 0
+        if (NPC2.HP < 0) { NPC2.HP = 0; }
+        
+		cout << "The attack hits! Damage dealt: " << damage << endl;
 	}
 	
-	HP -= damage;
+	else{	cout << "The attack missed!" << endl;	}
 }
 
-int main(){
-	
-	//variables
-	int player_HP = 100, enemy_HP = 50;
-	int player_ATK = 20, player_SPD = 10, player_DEF = 0;
-	int enemy_ATK = 20, enemy_SPD = 10, enemy_DEF = 0;
-	bool players_turn = true;
 
+void Player_Action(Character& player, Character& enemy){
+	
 	int input;
 	
-	Display_stats(player_HP, enemy_HP);	
-
-	//player Actions
+	//Define availaible actions
 	enum Actions{
 		Attack = 1,
 		SPD_UP,
@@ -53,80 +61,88 @@ int main(){
 		Heal
 	};
 
-	while (enemy_HP > 0 && player_HP > 0){
-		
-		//Players Turn
-		if (players_turn == true)
+	if (player.Turn == true)
+	{
+		cout << "1.Attack \n2.SPD UP \n3.DEF UP \n4.ATK UP \n5.Heal" << endl;
+		cin >> input;	
+			
+		switch (input)
 		{
-			cout << "1.Attack \n2.SPD UP \n3.DEF UP \n4.ATK UP \n5.Heal" << endl;
-			cin >> input;	
-			
-			//player Actions 
-			switch (input)
+			case Attack:
 			{
-				case Attack:
-				{
-					Attack_Check(enemy_HP, player_ATK, enemy_DEF);
-					Display_stats(player_HP, enemy_HP);
-					players_turn = false;
-					break;
-				}
-				
-				case SPD_UP:
-				{
-					player_SPD += 5;
-					Display_stats(player_HP, enemy_HP);
-					players_turn = false;
-					break;
-				}
-				
-				case DEF_UP:
-				{
-					player_DEF += 5;
-					Display_stats(player_HP, enemy_HP);
-					players_turn = false;
-					break;
-				}
-				
-				case ATK_UP:
-				{
-					player_ATK += 5;
-					Display_stats(player_HP, enemy_HP);
-					players_turn = false;
-					break;
-				}
-
-				case Heal:
-				{
-					player_HP += 30;
-					Display_stats(player_HP, enemy_HP);
-					players_turn = false;
-					break;
-				}
-				
-                default: 
-				{
-                    cout << "Invalid choice! Try again." << endl;
-                    break;
-            	}
-																
+				Attack_Check(player, enemy);
+				Display_stats(player, enemy);
+				break;
 			}
-			
+				
+			case SPD_UP:
+			{
+				player.SPD += 5;
+				Display_stats(player, enemy);
+				break;
+			}
+				
+			case DEF_UP:
+			{
+				player.DEF += 5;
+				Display_stats(player, enemy);
+				break;
+			}
+					
+			case ATK_UP:
+			{
+				player.ATK += 5;
+				Display_stats(player, enemy);
+				break;
+			}
+	
+			case Heal:
+			{
+				player.HP += 30;
+				Display_stats(player, enemy);
+				break;
+			}
+				
+        	default: 
+			{
+        	    cout << "Invalid choice!" << endl;
+			}						
 		}
+	}
+	player.Turn = false;
+}
+
+//MAIN
+int main(){
+	
+	//for seeding
+	srand(static_cast<unsigned int>(time(0)));
+	
+	//player object
+	Character player;
+	Character enemy;
+	
+	Display_stats(player, enemy);	
+	
+	while (enemy.HP > 0 && player.HP > 0){
+		
+		//Players Turn 
+		Player_Action(player, enemy);
 		
 		//Enemy Turn
-		if (players_turn != true && enemy_HP > 0)
+		if (player.Turn != true && enemy.HP > 0)
 		{	
-			Attack_Check(player_HP, enemy_ATK, player_DEF);
-			Display_stats(player_HP, enemy_HP);
-			players_turn = true;
+			Attack_Check(enemy, player);
+			Display_stats(player, enemy);
+			player.Turn = true;
 		}
 	}
 	
-	if (enemy_HP <= 0)
+	//Win Loss states
+	if (enemy.HP <= 0)
 	{	cout << "player wins";	}
 	
-	if (player_HP <= 0)
+	if (player.HP <= 0)
 	{	cout << "player losses";}
 	
 	return(0);	
