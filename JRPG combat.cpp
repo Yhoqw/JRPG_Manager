@@ -18,10 +18,11 @@ class Character {
 //function for displaying all stats
 void Display_stats(Character NPC1, Character NPC2)
 {
-	cout << "\nHP: " << NPC1.HP  << "\n" "Enemy HP: " << NPC2.HP << endl;		
+	cout << "\n" << NPC1.name << "HP: " << NPC1.HP  << "\n" "Enemy HP: " << NPC2.HP << endl;
+	cout << "------------------------------------------------------------------------------" << endl;		
 };
 
-//Attack Action function
+//Hit Check function
 void Attack_Check(Character &NPC1, Character &NPC2)
 {
 	//Check whether the hit lands (based on SPD)
@@ -41,14 +42,16 @@ void Attack_Check(Character &NPC1, Character &NPC2)
 		//Ensure HP does not go below 0
         if (NPC2.HP < 0) { NPC2.HP = 0; }
         
-		cout << "The attack hits! Damage dealt: " << damage << endl;
+		cout << NPC1.name << "'s attack hits! Damage dealt: " << damage << endl;
 	}
 	
 	else{	cout << "The attack missed!" << endl;	}
 }
 
-
+//Action input function
 void Player_Action(Character& player, Character& enemy){
+	
+	Display_stats(player, enemy);
 	
 	int input;
 	
@@ -71,35 +74,30 @@ void Player_Action(Character& player, Character& enemy){
 			case Attack:
 			{
 				Attack_Check(player, enemy);
-				Display_stats(player, enemy);
 				break;
 			}
 				
 			case SPD_UP:
 			{
 				player.SPD += 5;
-				Display_stats(player, enemy);
 				break;
 			}
 				
 			case DEF_UP:
 			{
 				player.DEF += 5;
-				Display_stats(player, enemy);
 				break;
 			}
 					
 			case ATK_UP:
 			{
 				player.ATK += 5;
-				Display_stats(player, enemy);
 				break;
 			}
 	
 			case Heal:
 			{
 				player.HP += 30;
-				Display_stats(player, enemy);
 				break;
 			}
 				
@@ -109,7 +107,8 @@ void Player_Action(Character& player, Character& enemy){
 			}						
 		}
 	}
-	player.Turn = false;
+	Display_stats(player, enemy);
+	//player.Turn = false;
 }
 
 //MAIN
@@ -118,17 +117,27 @@ int main(){
 	//for seeding
 	srand(static_cast<unsigned int>(time(0)));
 	
-	//player object
+	//Character objects
 	Character player;
+	player.name = "player1";
+	Character player2;
+	player2.name = "player2";
+	Character player3;
+	player3.name = "player3";
+	
 	Character enemy;
+	enemy.name = "enemy";
 	
-	Display_stats(player, enemy);	
-	
+	//Combat Loop
 	while (enemy.HP > 0 && player.HP > 0){
 		
 		//Players Turn 
 		Player_Action(player, enemy);
+		Player_Action(player2, enemy);
+		Player_Action(player3, enemy);
 		
+		player.Turn = false;
+			
 		//Enemy Turn
 		if (player.Turn != true && enemy.HP > 0)
 		{	
