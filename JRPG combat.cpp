@@ -8,50 +8,69 @@
 using namespace std;
 
 //Character Class
-class Character {
+class Entity{
 	public:
 		string name;	
-		int HP = 100, ATK = 20, SPD = 10, DEF = 0;
+		int HP, ATK, SPD, DEF;
 		bool Turn = true;
+		
+		//Constructor (Ideally the reading file info will be done in the constructor)
+		Entity(string n): name(n)
+		{
+			HP = 100, ATK = 20, SPD = 10, DEF = 10;
+		}
+		
+		void Display_stats();
+		void Attack_Check(Entity &target);
 };
 
-//function for displaying all stats
-void Display_stats(Character NPC1, Character NPC2)
+//Sub-classes of Entity
+class Player : public Entity {
+	public:
+		using Entity::Entity;
+};
+
+class Enemy : public Entity {
+	public:
+		using Entity :: Entity;
+};
+
+//Entity Methods
+void Entity :: Display_stats()
 {
-	cout << "\n" << NPC1.name << "HP: " << NPC1.HP  << "\n" "Enemy HP: " << NPC2.HP << endl;
+	cout << "\n" << name << "HP: " << HP << endl;
 	cout << "------------------------------------------------------------------------------" << endl;		
 };
 
-//Hit Check function
-void Attack_Check(Character &NPC1, Character &NPC2)
+void Entity :: Attack_Check(Entity &target)
 {
 	//Check whether the hit lands (based on SPD)
     int Hit_chance = rand() % 100;
-    int Hit_threshold = 100 - NPC2.SPD; 
+    int Hit_threshold = 100 - target.SPD; 
     
     //Damage calculation
     if (Hit_chance < Hit_threshold)
 	{
-		int damage = NPC1.ATK - NPC2.DEF;
+		int damage = ATK - target.DEF;
 	
-		//in case damage gives a negative number
-		if (damage < 0) {	damage = 0;	}
+		//in case damage gives a negative number (Ternaray operator)
+		damage = (damage < 0) ? 0 : damage;
 		
-		NPC2.HP -= damage;
+		target.HP -= damage;
 			
 		//Ensure HP does not go below 0
-        if (NPC2.HP < 0) { NPC2.HP = 0; }
+        target.HP = (NPC2.HP < 0) ? 0 : target.HP;
         
-		cout << NPC1.name << "'s attack hits! Damage dealt: " << damage << endl;
+		cout << name << "'s attack hits! Damage dealt: " << damage << endl;
 	}
 	
 	else{	cout << "The attack missed!" << endl;	}
 }
 
 //Action input function
-void Player_Action(Character& player, Character& enemy){
+void Player_Action(Entity& player, Entity& enemy){
 	
-	Display_stats(player, enemy);
+	player.Display_stats();
 	
 	int input;
 	
@@ -73,7 +92,7 @@ void Player_Action(Character& player, Character& enemy){
 		{
 			case Attack:
 			{
-				Attack_Check(player, enemy);
+				player.Attack_Check(enemy);
 				break;
 			}
 				
@@ -107,7 +126,7 @@ void Player_Action(Character& player, Character& enemy){
 			}						
 		}
 	}
-	Display_stats(player, enemy);
+	player.Display_stats();
 	//player.Turn = false;
 }
 
@@ -117,19 +136,17 @@ int main(){
 	//for seeding
 	srand(static_cast<unsigned int>(time(0)));
 	
-	//Character objects
-	Character player;
-	player.name = "player1";
-	Character player2;
-	player2.name = "player2";
-	Character player3;
-	player3.name = "player3";
+	//Entity objects
+	Player player("Player1");
+	Player player2("Player2");
+	Player player3("Player3");
 	
-	Character enemy;
-	enemy.name = "enemy";
+	Enemy enemy1("enemy");
+	Enemy enemy2("enemy2");
+	Enemy enemy3("enemy3");
 	
 	//Combat Loop
-	while (enemy.HP > 0 && player.HP > 0){
+	while (enemy.HP > 0){
 		
 		//Players Turn 
 		Player_Action(player, enemy);
@@ -141,8 +158,8 @@ int main(){
 		//Enemy Turn
 		if (player.Turn != true && enemy.HP > 0)
 		{	
-			Attack_Check(enemy, player);
-			Display_stats(player, enemy);
+			enemy.Attack_Check(player);
+			enemy.Display_stats();
 			player.Turn = true;
 		}
 	}
