@@ -7,6 +7,10 @@
 
 using namespace std;
 
+//Variable Arrays
+string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro"};
+string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi"};
+
 //create seperate functions for player actions
 
 //Entity Class
@@ -15,20 +19,22 @@ class Entity{
 		
 		//Entity Class Attributes/Member variables
 		string name;	
-		int HP, ATK, SPD, DEF;
+		int HP = 100, ATK, SPD, DEF;
 		
 		bool Turn = true;
-		
-		//Constructor (Ideally the reading file info will be done in the constructor)
-		Entity(string n): name(n)
-		{
-			HP = 100, ATK = 20, SPD = 10, DEF = 10;
-		}
-		
+
 		//Entity Class member functions
 		void Display_stats();
 		void Attack_Check(Entity &target);
-		void Read_File();
+		void Read_File();		
+		void generate_character();
+		
+		//Constructor (Ideally the reading file info will be done in the constructor)
+		Entity(int hp) : HP(hp)
+		{
+			HP = 100;	
+			generate_character();	
+		}
 };
 
 //Sub-classes of Entity
@@ -82,6 +88,7 @@ void Entity :: Attack_Check(Entity &target)
 	else{	cout << "The attack missed!" << endl;	}
 }
 
+//keep this for now but possibly replace this with entity generation for the time being
 void Entity :: Read_File()
 {
 	ifstream infile("NPC_data.txt");
@@ -96,20 +103,14 @@ void Entity :: Read_File()
 	infile.close();
 } 
 
-void Entity :: generate_character()
-{		
-	NPC.name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
-	NPC.Class = classes[rand() % (sizeof(classes) / sizeof(classes[0]))];
-	NPC.Backstory = backstories[rand() % backstories.size()]; 
+void Entity :: generate_character(){
+
+	//Generates a random name 		
+	name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
 	
-	//NPC.HP = (rand() % 100)+ 1
-	NPC.ATK = (rand() % 20) + 1;
-	NPC.SPD = (rand() % 10);
-	NPC.DEF = (rand() % 10);
-	
-	NPC.Display_character();
-	
-	return (NPC);
+	ATK = (rand() % 20) + 1;
+	SPD = (rand() % 10);
+	DEF = (rand() % 10);
 };
 
 //Action input function
@@ -211,14 +212,13 @@ int main(){
 	srand(static_cast<unsigned int>(time(0)));
 	
 	//objects
-	Player player1("Player1");
-	player1.Read_File();
-	Player player2("Player2");
-	Player player3("Player3");
+	Player player1(100);
+	Player player2(100);
+	Player player3(100);
 		
-	Opposition enemy1("enemy1");
-	Opposition enemy2("enemy2");
-	Opposition enemy3("enemy3");	
+	Opposition enemy1(100);
+	Opposition enemy2(100);
+	Opposition enemy3(100);	
 	
 	//Combat Loop
 	while (enemy1.HP > 0 || enemy2.HP > 0 || enemy3.HP > 0){
