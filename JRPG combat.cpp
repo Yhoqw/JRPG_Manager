@@ -16,6 +16,7 @@ class Entity{
 		//Entity Class Attributes/Member variables
 		string name;	
 		int HP, ATK, SPD, DEF;
+		
 		bool Turn = true;
 		
 		//Constructor (Ideally the reading file info will be done in the constructor)
@@ -27,12 +28,15 @@ class Entity{
 		//Entity Class member functions
 		void Display_stats();
 		void Attack_Check(Entity &target);
+		void Read_File();
 };
 
 //Sub-classes of Entity
 class Player : public Entity {
 	public:
 		using Entity::Entity;
+		
+		void Actions(Entity& enemy1, Entity& enemy2, Entity& enemy3);
 		
 };
 
@@ -47,7 +51,7 @@ class Opposition : public Entity {
 //Entity Methods
 void Entity :: Display_stats()
 {
-	cout << "\n" << name << " HP: " << HP << endl;
+	cout << "\n" << name << " |HP: " << HP << ", ATK: " << ATK << ", SPD: " << SPD << ", DEF: " << DEF << endl;
 	cout << "------------------------------------------------------------------------------" << endl;		
 };
 
@@ -78,24 +82,49 @@ void Entity :: Attack_Check(Entity &target)
 	else{	cout << "The attack missed!" << endl;	}
 }
 
-//Action input function
-void Player_Action(Entity& player, Entity& enemy1, Entity& enemy2, Entity& enemy3) {
+void Entity :: Read_File()
+{
+	ifstream infile("NPC_data.txt");
+	if (infile)
+	{
+		getline(infile, name);
+		infile >> ATK;
+		infile >> SPD;
+		infile >> DEF;
+	}
 	
-	player.Display_stats();
+	infile.close();
+} 
+
+void Entity :: generate_character()
+{		
+	NPC.name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
+	NPC.Class = classes[rand() % (sizeof(classes) / sizeof(classes[0]))];
+	NPC.Backstory = backstories[rand() % backstories.size()]; 
+	
+	//NPC.HP = (rand() % 100)+ 1
+	NPC.ATK = (rand() % 20) + 1;
+	NPC.SPD = (rand() % 10);
+	NPC.DEF = (rand() % 10);
+	
+	NPC.Display_character();
+	
+	return (NPC);
+};
+
+//Action input function
+void Player :: Actions(Entity& enemy1, Entity& enemy2, Entity& enemy3) {
+	
+	Display_stats();
 	
 	int input;
 	
 	//Define availaible actions
-	enum Actions{
-		Attack = 1,
-		SPD_UP,
-		DEF_UP,
-		ATK_UP,
-		Heal
-	};
+	enum Actions
+	{	Attack = 1, SPD_UP, DEF_UP, ATK_UP, Heal	};
 
 	//Action Selection and output
-	if (player.Turn == true)
+	if (Turn == true)
 	{
 		cout << "1.Attack \n2.SPD UP \n3.DEF UP \n4.ATK UP \n5.Heal" << endl;
 		cin >> input;	
@@ -113,15 +142,15 @@ void Player_Action(Entity& player, Entity& enemy1, Entity& enemy2, Entity& enemy
 				switch (target){
 					
 					case 1: 
-						player.Attack_Check(enemy1);
+						Attack_Check(enemy1);
 						break;
 					
 					case 2:
-						player.Attack_Check(enemy2);
+						Attack_Check(enemy2);
 						break;						
 
 					case 3:
-						player.Attack_Check(enemy3);
+						Attack_Check(enemy3);
 						break;
 						
 					default:
@@ -133,29 +162,29 @@ void Player_Action(Entity& player, Entity& enemy1, Entity& enemy2, Entity& enemy
 				
 			case SPD_UP:
 			{
-				player.SPD += 5;
+				SPD += 5;
 				cout << "SPD UP +5" << endl;
 				break;
 			}
 				
 			case DEF_UP:
 			{
-				player.DEF += 5;
+				DEF += 5;
 				cout << "DEF UP +5" << endl;
 				break;
 			}
 					
 			case ATK_UP:
 			{
-				player.ATK += 5;
+				ATK += 5;
 				cout << "ATK UP +5" << endl;
 				break;
 			}
 	
 			case Heal:
 			{
-				player.HP += 30;
-				cout << "Healed" << player.name << " +30" << endl;
+				HP += 30;
+				cout << "Healed" << name << " +30" << endl;
 				break;
 			}
 				
@@ -183,6 +212,7 @@ int main(){
 	
 	//objects
 	Player player1("Player1");
+	player1.Read_File();
 	Player player2("Player2");
 	Player player3("Player3");
 		
@@ -194,9 +224,9 @@ int main(){
 	while (enemy1.HP > 0 || enemy2.HP > 0 || enemy3.HP > 0){
 		
 		//Players Turn 
-		Player_Action(player1, enemy1, enemy2, enemy3);
-		Player_Action(player2, enemy1, enemy2, enemy3);
-		Player_Action(player3, enemy1, enemy2, enemy3);
+		player1.Actions(enemy1, enemy2, enemy3);
+		player2.Actions(enemy1, enemy2, enemy3);
+		player3.Actions(enemy1, enemy2, enemy3);
 		
 		players_turn = false;
 
