@@ -36,13 +36,13 @@ class Entity{
 			generate_character();	
 		}
 };
-
+ 
 //Sub-classes of Entity
 class Player : public Entity {
 	public:
 		using Entity::Entity;
 		
-		void Actions(Entity& enemy1, Entity& enemy2, Entity& enemy3);
+		void Actions(Entity enemys[3]);
 		
 };
 
@@ -88,21 +88,6 @@ void Entity :: Attack_Check(Entity &target)
 	else{	cout << "The attack missed!" << endl;	}
 }
 
-//keep this for now but possibly replace this with entity generation for the time being
-void Entity :: Read_File()
-{
-	ifstream infile("NPC_data.txt");
-	if (infile)
-	{
-		getline(infile, name);
-		infile >> ATK;
-		infile >> SPD;
-		infile >> DEF;
-	}
-	
-	infile.close();
-} 
-
 void Entity :: generate_character(){
 
 	//Generates a random name 		
@@ -114,7 +99,7 @@ void Entity :: generate_character(){
 };
 
 //Action input function
-void Player :: Actions(Entity& enemy1, Entity& enemy2, Entity& enemy3) {
+void Player :: Actions(Entity enemys[3]) {
 	
 	Display_stats();
 	
@@ -136,22 +121,22 @@ void Player :: Actions(Entity& enemy1, Entity& enemy2, Entity& enemy3) {
 			{
 				//give options to choose who to attack
 				int target;
-				cout << "Select who you wish to attack" "\n1." << enemy1.name << "\n2." << enemy2.name << "\n3." << enemy3.name << endl;
+				cout << "Select who you wish to attack" "\n1." << enemys[0].name << "\n2." << enemys[1].name << "\n3." << enemys[2].name << endl;
 				cin >> target;
 				
 				//switch statement after selecting who to attack
 				switch (target){
 					
 					case 1: 
-						Attack_Check(enemy1);
+						Attack_Check(enemys[0]);
 						break;
 					
 					case 2:
-						Attack_Check(enemy2);
+						Attack_Check(enemys[1]);
 						break;						
 
 					case 3:
-						Attack_Check(enemy3);
+						Attack_Check(enemys[2]);
 						break;
 						
 					default:
@@ -197,11 +182,15 @@ void Player :: Actions(Entity& enemy1, Entity& enemy2, Entity& enemy3) {
 	}
 }
 
-void Opposition::Action(Player &player) {
+void Opposition :: Action(Player &player) {
 	
 	Display_stats();
     Attack_Check(player);
 }
+
+//Object Arrays (temporary way to do it. Might consider pivoting to using pointers later)
+Entity Profiles[10] = {Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100)}; //can i do profile[20]; instead?
+
 
 //MAIN
 int main(){
@@ -212,43 +201,68 @@ int main(){
 	srand(static_cast<unsigned int>(time(0)));
 	
 	//objects
-	Player player1(100);
-	Player player2(100);
-	Player player3(100);
+	for (int i = 0; i < 10; i++)
+	{
+		Profiles[i].Display_stats();
+	}	
+	
+	Player players[3] = {Player(100), Player(100), Player(100)};
+	
+//	Player player1(100);
+//	Player player2(100);
+//	Player player3(100);
+	
+	Opposition enemies[3] = {Opposition(100), Opposition(100), Opposition(100)};	
 		
-	Opposition enemy1(100);
-	Opposition enemy2(100);
-	Opposition enemy3(100);	
+//	Opposition enemy1(100);
+//	Opposition enemy2(100);
+//	Opposition enemy3(100);	
 	
 	//Combat Loop
-	while (enemy1.HP > 0 || enemy2.HP > 0 || enemy3.HP > 0){
+	while ( enemies[0].HP > 0 || enemies[1].HP > 0 || enemies[2].HP > 0 && (players[0].HP > 0 || players[1].HP > 0 || players[2].HP > 0) ){
 		
 		//Players Turn 
-		player1.Actions(enemy1, enemy2, enemy3);
-		player2.Actions(enemy1, enemy2, enemy3);
-		player3.Actions(enemy1, enemy2, enemy3);
+		for (int i = 0; i < 3; i++)
+		{	players[i].Actions(enemies);	}
 		
+//		player1.Actions(enemy1, enemy2, enemy3);
+//		player2.Actions(enemy1, enemy2, enemy3);
+//		player3.Actions(enemy1, enemy2, enemy3);
+	
 		players_turn = false;
 
 		//Enemy Turn
-		if (players_turn != true && enemy1.HP > 0)
-		{	enemy1.Action(player1);	}
+		for (int i = 0; i < 3; i++)
+		{
+			if (enemies[i].HP > 0)
+			{	enemies[i].Action(players[i]);	}
+		}
 		
-		if (players_turn != true && enemy2.HP > 0)
-		{	enemy2.Action(player2);	}
-		
-		if (players_turn != true && enemy3.HP > 0)
-		{	enemy3.Action(player3);	}
+//		if (players_turn != true && enemy1.HP > 0)
+//		{	enemy1.Action(player1);	}
+//		 
+//		if (players_turn != true && enemy2.HP > 0)
+//		{	enemy2.Action(player2);	}
+//		 
+//		if (players_turn != true && enemy3.HP > 0)
+//		{	enemy3.Action(player3);	}
 		
 		players_turn = true;
 	}
 	
 	//Win Loss states
-	if (enemy1.HP <= 0 && enemy2.HP <= 0 && enemy3.HP <= 0)
-	{	cout << "player wins";	}
 	
-	if (player1.HP <= 0 && player2.HP <= 0 && player3.HP <= 0)
-	{	cout << "player losses"; }
+//	if (enemy1.HP <= 0 && enemy2.HP <= 0 && enemy3.HP <= 0)
+//	{	cout << "player wins";	}
+//	
+//	if (player1.HP <= 0 && player2.HP <= 0 && player3.HP <= 0)
+//	{	cout << "player losses"; }
+
+	if (enemies[0].HP <= 0 && enemies[1].HP <= 0 && enemies[2].HP <= 0) 
+	{	cout << "Players win!" << endl;	}
+
+	if (players[0].HP <= 0 && players[1].HP <= 0 && players[2].HP <= 0) 
+	{	cout << "Enemies win!" << endl;	}
 	
 	return(0);	
 };
