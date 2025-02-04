@@ -189,7 +189,7 @@ void Opposition :: Action(Player &player) {
 }
 
 //Object Arrays (temporary way to do it. Might consider pivoting to using pointers later)
-Entity Profiles[10] = {Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100)}; //can i do profile[20]; instead?
+//Entity Profiles[10] = {Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100)}; //can I do profile[20]; instead?
 
 
 //MAIN
@@ -201,22 +201,9 @@ int main(){
 	srand(static_cast<unsigned int>(time(0)));
 	
 	//objects
-	for (int i = 0; i < 10; i++)
-	{
-		Profiles[i].Display_stats();
-	}	
-	
 	Player players[3] = {Player(100), Player(100), Player(100)};
 	
-//	Player player1(100);
-//	Player player2(100);
-//	Player player3(100);
-	
-	Opposition enemies[3] = {Opposition(100), Opposition(100), Opposition(100)};	
-		
-//	Opposition enemy1(100);
-//	Opposition enemy2(100);
-//	Opposition enemy3(100);	
+	Opposition enemies[3] = {Opposition(100), Opposition(100), Opposition(100)};			
 	
 	//Combat Loop
 	while ( enemies[0].HP > 0 || enemies[1].HP > 0 || enemies[2].HP > 0 && (players[0].HP > 0 || players[1].HP > 0 || players[2].HP > 0) ){
@@ -224,10 +211,6 @@ int main(){
 		//Players Turn 
 		for (int i = 0; i < 3; i++)
 		{	players[i].Actions(enemies);	}
-		
-//		player1.Actions(enemy1, enemy2, enemy3);
-//		player2.Actions(enemy1, enemy2, enemy3);
-//		player3.Actions(enemy1, enemy2, enemy3);
 	
 		players_turn = false;
 
@@ -238,26 +221,10 @@ int main(){
 			{	enemies[i].Action(players[i]);	}
 		}
 		
-//		if (players_turn != true && enemy1.HP > 0)
-//		{	enemy1.Action(player1);	}
-//		 
-//		if (players_turn != true && enemy2.HP > 0)
-//		{	enemy2.Action(player2);	}
-//		 
-//		if (players_turn != true && enemy3.HP > 0)
-//		{	enemy3.Action(player3);	}
-		
 		players_turn = true;
 	}
 	
 	//Win Loss states
-	
-//	if (enemy1.HP <= 0 && enemy2.HP <= 0 && enemy3.HP <= 0)
-//	{	cout << "player wins";	}
-//	
-//	if (player1.HP <= 0 && player2.HP <= 0 && player3.HP <= 0)
-//	{	cout << "player losses"; }
-
 	if (enemies[0].HP <= 0 && enemies[1].HP <= 0 && enemies[2].HP <= 0) 
 	{	cout << "Players win!" << endl;	}
 
