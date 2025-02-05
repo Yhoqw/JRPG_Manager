@@ -19,7 +19,7 @@ class Entity{
 		
 		//Entity Class Attributes/Member variables
 		string name;	
-		int HP = 100, ATK, SPD, DEF;
+		int HP = 100, ATK, SPD, DEF, ID;
 		
 		bool Turn = true;
 
@@ -30,9 +30,8 @@ class Entity{
 		void generate_character();
 		
 		//Constructor (Ideally the reading file info will be done in the constructor)
-		Entity(int hp) : HP(hp)
-		{
-			HP = 100;	
+		Entity()
+		{	
 			generate_character();	
 		}
 };
@@ -57,9 +56,9 @@ class Opposition : public Entity {
 //Entity Methods
 void Entity :: Display_stats()
 {
-	cout << "\n" << name << " |HP: " << HP << ", ATK: " << ATK << ", SPD: " << SPD << ", DEF: " << DEF << endl;
-	cout << "------------------------------------------------------------------------------" << endl;		
+	cout << name << " |HP: " << HP << ", ATK: " << ATK << ", SPD: " << SPD << ", DEF: " << DEF << endl;		
 };
+
 
 void Entity :: Attack_Check(Entity &target)
 {
@@ -82,7 +81,7 @@ void Entity :: Attack_Check(Entity &target)
 		//Ensure HP does not go below 0
         target.HP = (target.HP < 0) ? 0 : target.HP;
         
-		cout << name << "'s attack hits! Damage dealt: " << damage << endl;
+		cout << name << "'s attack hits! Damage dealt: " << damage << "\n" << endl;
 	}
 	
 	else{	cout << "The attack missed!" << endl;	}
@@ -188,10 +187,61 @@ void Opposition :: Action(Player &player) {
     Attack_Check(player);
 }
 
-//Object Arrays (temporary way to do it. Might consider pivoting to using pointers later)
-//Entity Profiles[10] = {Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100), Entity(100)}; //can I do profile[20]; instead?
-
-
+void Config(Entity entitites[], Player players[], Opposition enemies[])
+{
+	int Entitity_ID, player_ID;
+	int input, loop = 1;
+	
+	//Might add an ENUM here
+	
+	do{
+		cout << "Press 1.To Trade, 2.To Exit" << endl;
+		cin >> input;
+		
+		switch(input)
+		{
+			//Trade player
+			case 1:
+			{
+				for (int i = 0; i < 20; i++)
+				{
+					//entitites[i].ID = 1+i;
+					cout << "ID: " << 1+i << " ";
+					entitites[i].Display_stats();		
+				}	
+	
+	
+				//Currently keep player selection through this technique
+				cout << "\n" "Enter the ID of the Entity you want to Trade with a player" << endl;
+				cin >> Entitity_ID;
+			
+				for (int i = 0; i < 3; i++)
+				{
+					//players[i].ID = 1+i;	
+					cout << "ID: " << i + 1 << " ";
+					players[i].Display_stats();				
+				}
+	
+				cout << "Enter ID of the player you want to trade" << endl;
+				cin >> player_ID;
+		
+				players[player_ID - 1].name = entitites[Entitity_ID - 1].name;
+				players[player_ID - 1].ATK = entitites[Entitity_ID - 1].ATK;
+				players[player_ID - 1].SPD = entitites[Entitity_ID - 1].SPD;
+				players[player_ID - 1].DEF = entitites[Entitity_ID - 1].DEF;
+				
+				break;
+			}
+			
+			//Exit case
+			case 2:
+			{
+				loop = 0;
+				break;
+			}
+		}
+	} while (loop != 0);
+}
 //MAIN
 int main(){
 	
@@ -201,9 +251,13 @@ int main(){
 	srand(static_cast<unsigned int>(time(0)));
 	
 	//objects
-	Player players[3] = {Player(100), Player(100), Player(100)};
+ 	Entity profiles[20];
 	
-	Opposition enemies[3] = {Opposition(100), Opposition(100), Opposition(100)};			
+	Player players[3] = {Player(), Player(), Player()};
+	
+	Opposition enemies[3] = {Opposition(), Opposition(), Opposition()};			
+	
+	Config( profiles, players, enemies);
 	
 	//Combat Loop
 	while ( enemies[0].HP > 0 || enemies[1].HP > 0 || enemies[2].HP > 0 && (players[0].HP > 0 || players[1].HP > 0 || players[2].HP > 0) ){
