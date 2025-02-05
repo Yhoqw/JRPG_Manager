@@ -41,7 +41,7 @@ class Character {
 void Character :: Display_character(){
 	
 	cout << "Name: " << name << endl;
-	cout << "Class: " << Class << endl;
+	//cout << "Class: " << Class << endl;
 	//cout << "Backstory: " << Backstory << endl;
 	cout << "ATK:" << ATK << " |SPD:" << SPD << " |DEF:" << DEF << endl;
 };
@@ -66,15 +66,17 @@ Character generate_character(){
 };
 
 // Function to save NPC details to a file
-void save_NPCs(Character NPC) {
+void save_NPCs(Character NPC) 
+{	
     ofstream outfile("NPC_data.txt", ios::app); 
     if (outfile) 
 	{
-        outfile << "Name: " << NPC.name << endl;
-        outfile << "Class: " << NPC.Class << endl;
+        outfile << NPC.name << endl; // Name
         //outfile << "Backstory: " << NPC.Backstory << endl;
-        outfile << "ATK:" << NPC.ATK << " SPD:" << NPC.SPD << " DEF:" << NPC.DEF << endl;
-        outfile << "---------------------------" << endl;
+        outfile << NPC.ATK << endl; // ATK
+        outfile << NPC.SPD << endl; // SPD
+        outfile << NPC.DEF << endl; // DEF
+        
         outfile.close();
         cout << "NPC details saved successfully!" << endl;
     }
