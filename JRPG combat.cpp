@@ -8,8 +8,8 @@
 using namespace std;
 
 //Variable Arrays
-string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro"};
-string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi"};
+string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", " Luca ", " Raven", " Skyler", " Noa"};
+string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto" };
 
 //create seperate functions for player actions
 
@@ -42,7 +42,6 @@ class Player : public Entity {
 		using Entity::Entity;
 		
 		void Actions(Entity enemys[3]);
-		
 };
 
 class Opposition : public Entity {
@@ -192,11 +191,11 @@ class Team{
 	public:
 		string name;
 		int ID;
-		Entity party_memebers[3];
+		Entity party_members[3];
 };
 
 //Game (Non-Class functions) :- Maybe I should make a seperate class for handling game flow?
-void Config(Entity entitites[], Player players[], Opposition enemies[])
+void Config(Entity entitites[], Player players[], Opposition enemies[], Team teams[])
 {
 	int Entitity_ID, player_ID;
 	int input, loop = 1; 
@@ -213,11 +212,13 @@ void Config(Entity entitites[], Player players[], Opposition enemies[])
 			//Trade player
 			case 1:
 			{
-				for (int i = 0; i < 20; i++)
+				for (int i = 0; i < 4; i++)
 				{
-					//entitites[i].ID = 1+i;
-					cout << "ID: " << 1+i << " ";
-					entitites[i].Display_stats();		
+					for (int j = 0; j < 3; j++)
+					{
+						cout << "ID: " << (j + (i * 3)) + 1 << " ";
+						teams[i].party_members[j].Display_stats();	
+					}		
 				}	
 	
 	
@@ -254,12 +255,22 @@ void Config(Entity entitites[], Player players[], Opposition enemies[])
 	} while (loop != 0);
 }
 
-void Battle(Player players[], Opposition enemies[])
+void Battle(Player players[], Opposition enemies[], Team team)
 {
+	//set enemies based on the team you select
+	for (int k = 0; k < 3; k++)
+	{
+		enemies[k].name = team.party_members[k].name;
+		enemies[k].ATK = team.party_members[k].ATK;
+		enemies[k].SPD = team.party_members[k].SPD;
+		enemies[k].DEF = team.party_members[k].DEF;
+		enemies[k].Team_ID = team.party_members[k].Team_ID;
+	}					
+	
 	int players_turn = true;
 	
 	//Combat Loop
-	while ( enemies[0].HP > 0 || enemies[1].HP > 0 || enemies[2].HP > 0 && (players[0].HP > 0 || players[1].HP > 0 || players[2].HP > 0) ){
+	while ( (enemies[0].HP > 0 || enemies[1].HP > 0 || enemies[2].HP > 0) && (players[0].HP > 0 || players[1].HP > 0 || players[2].HP > 0) ){
 		
 		//Players Turn 
 		for (int i = 0; i < 3; i++)
@@ -300,10 +311,15 @@ int main(){
 	Opposition enemies[3] = {Opposition(), Opposition(), Opposition()};			
 	
 	//set profiles team IDs
-	for (int i = 0; i <= 4; i++)
+	for (int i = 0; i < 4; i++)
 	{
+		teams[i].ID = i+1;
+		
 		for (int j = 0; j < 3; j++)
-		{	profiles[j + (i * 3)].Team_ID = i + 1;	}
+		{	
+			profiles[j + (i * 3)].Team_ID = i + 1;	
+			teams[i].party_members[j] = profiles[j + (i * 3)];
+		}
 	}
 	
 	//Gameloop
@@ -311,18 +327,17 @@ int main(){
 	cin >> team;
 	
 	//set players based on the team you select
-	int start = (team - 1) * 3;
 	for (int k = 0; k < 3; k++)
 	{
-		players[k].name = profiles[start + k].name;
-		players[k].ATK = profiles[start + k].ATK;
-		players[k].SPD = profiles[start + k].SPD;
-		players[k].DEF = profiles[start + k].DEF;	
-		players[k].Team_ID = profiles[start + k].Team_ID;
+		players[k].name = teams[team - 1].party_members[k].name;
+		players[k].ATK = teams[team - 1].party_members[k].ATK;
+		players[k].SPD = teams[team - 1].party_members[k].SPD;
+		players[k].DEF = teams[team - 1].party_members[k].DEF;
+		players[k].Team_ID = teams[team - 1].party_members[k].Team_ID;
 	}				
 	
-	Config(profiles, players, enemies);	
-	Battle(players, enemies);
+	Config(profiles, players, enemies, teams);	
+	Battle(players, enemies, teams[0]);
 	
 	return(0);	
 };
