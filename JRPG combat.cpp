@@ -19,7 +19,7 @@ class Entity{
 		
 		//Entity Class Attributes/Member variables
 		string name;	
-		int HP = 100, ATK, SPD, DEF, ID;
+		int HP = 100, ATK, SPD, DEF, Team_ID;
 		
 		bool Turn = true;
 
@@ -191,6 +191,14 @@ void Config(Entity entitites[], Player players[], Opposition enemies[])
 {
 	int Entitity_ID, player_ID;
 	int input, loop = 1;
+	
+	for (int j = 0; j < 3; j++)
+	{
+		entitites[j].name = players[j].name;
+		entitites[j].ATK = players[j].ATK;
+		entitites[j].SPD = players[j].SPD;
+		entitites[j].DEF = players[j].DEF;	
+	}
 	
 	//Might add an ENUM here
 	
