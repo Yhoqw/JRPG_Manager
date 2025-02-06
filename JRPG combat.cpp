@@ -8,10 +8,10 @@
 using namespace std;
 
 //Variable Arrays
-string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", " Luca ", " Raven", " Skyler", " Noa"};
-string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto" };
+string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
+string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi" };
 
-//create seperate functions for player actions
+//create seperate functions for player actions?
 
 //Entity Class
 class Entity{
@@ -190,7 +190,7 @@ void Opposition :: Action(Player &player) {
 class Team{
 	public:
 		string name;
-		int ID;
+		int ID, wins, losses;
 		Entity party_members[3];
 };
 
@@ -299,7 +299,8 @@ void Battle(Player players[], Opposition enemies[], Team team)
 //MAIN
 int main(){
 	
-	int team;
+	int team, opp_team;
+	char exit = 'n';
 	
 	//for seeding
 	srand(static_cast<unsigned int>(time(0)));
@@ -325,19 +326,35 @@ int main(){
 	//Gameloop
 	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. There are 4 teams. Choose your team (1-4)" << endl;
 	cin >> team;
-	
-	//set players based on the team you select
-	for (int k = 0; k < 3; k++)
-	{
+			
+		//set players based on the team you select
+		for (int k = 0; k < 3; k++)
+		{
 		players[k].name = teams[team - 1].party_members[k].name;
 		players[k].ATK = teams[team - 1].party_members[k].ATK;
 		players[k].SPD = teams[team - 1].party_members[k].SPD;
 		players[k].DEF = teams[team - 1].party_members[k].DEF;
 		players[k].Team_ID = teams[team - 1].party_members[k].Team_ID;
-	}				
+		}
+						
+	do
+	{
+		
+		system("cls");
+		Config(profiles, players, enemies, teams);	
+		system("cls");
 	
-	Config(profiles, players, enemies, teams);	
-	Battle(players, enemies, teams[0]);
+		cout << "Select Your Opponent (1-4)" << endl;
+		cin >> opp_team;
+	
+		if (opp_team != team)
+		{	Battle(players, enemies, teams[opp_team - 1]);	}
+		
+		cout << "Exit (y/n)" << endl;
+		cin >> exit;
+		
+	}while(exit != 'y' || exit != 'Y');
+	
 	
 	return(0);	
 };
