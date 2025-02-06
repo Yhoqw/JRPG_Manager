@@ -19,7 +19,7 @@ class Entity{
 		
 		//Entity Class Attributes/Member variables
 		string name;	
-		int HP = 100, ATK, SPD, DEF, Team_ID;
+		int HP = 100, ATK, SPD, DEF, ID, Team_ID = 1;
 		
 		bool Turn = true;
 
@@ -54,14 +54,13 @@ class Opposition : public Entity {
 };
 
 //Entity Methods
-void Entity :: Display_stats()
-{
-	cout << name << " |HP: " << HP << ", ATK: " << ATK << ", SPD: " << SPD << ", DEF: " << DEF << endl;		
+void Entity :: Display_stats(){
+	
+	cout << name << " |HP: " << HP << ", ATK: " << ATK << ", SPD: " << SPD << ", DEF: " << DEF << " |Team: " << Team_ID << endl;		
 };
 
-
-void Entity :: Attack_Check(Entity &target)
-{
+void Entity :: Attack_Check(Entity &target){
+	
 	//Check whether the hit lands (based on SPD)
     int Hit_chance = rand() % 100;
     int Hit_threshold = 100 - target.SPD; 
@@ -95,6 +94,7 @@ void Entity :: generate_character(){
 	ATK = (rand() % 20) + 1;
 	SPD = (rand() % 10);
 	DEF = (rand() % 10);
+	
 };
 
 //Action input function
@@ -187,21 +187,23 @@ void Opposition :: Action(Player &player) {
     Attack_Check(player);
 }
 
+//Teams Class
+class Team{
+	public:
+		string name;
+		int ID;
+		Entity party_memebers[3];
+};
+
+//Game (Non-Class functions) :- Maybe I should make a seperate class for handling game flow?
 void Config(Entity entitites[], Player players[], Opposition enemies[])
 {
 	int Entitity_ID, player_ID;
-	int input, loop = 1;
-	
-	for (int j = 0; j < 3; j++)
-	{
-		entitites[j].name = players[j].name;
-		entitites[j].ATK = players[j].ATK;
-		entitites[j].SPD = players[j].SPD;
-		entitites[j].DEF = players[j].DEF;	
-	}
+	int input, loop = 1; 
 	
 	//Might add an ENUM here
 	
+	//Management Actions
 	do{
 		cout << "Press 1.To Trade, 2.To Exit" << endl;
 		cin >> input;
@@ -237,6 +239,7 @@ void Config(Entity entitites[], Player players[], Opposition enemies[])
 				players[player_ID - 1].ATK = entitites[Entitity_ID - 1].ATK;
 				players[player_ID - 1].SPD = entitites[Entitity_ID - 1].SPD;
 				players[player_ID - 1].DEF = entitites[Entitity_ID - 1].DEF;
+				players[player_ID - 1].Team_ID = entitites[Entitity_ID - 1].Team_ID;
 				
 				break;
 			}
@@ -250,22 +253,10 @@ void Config(Entity entitites[], Player players[], Opposition enemies[])
 		}
 	} while (loop != 0);
 }
-//MAIN
-int main(){
-	
+
+void Battle(Player players[], Opposition enemies[])
+{
 	int players_turn = true;
-	
-	//for seeding
-	srand(static_cast<unsigned int>(time(0)));
-	
-	//objects
- 	Entity profiles[20];
-	
-	Player players[3] = {Player(), Player(), Player()};
-	
-	Opposition enemies[3] = {Opposition(), Opposition(), Opposition()};			
-	
-	Config( profiles, players, enemies);
 	
 	//Combat Loop
 	while ( enemies[0].HP > 0 || enemies[1].HP > 0 || enemies[2].HP > 0 && (players[0].HP > 0 || players[1].HP > 0 || players[2].HP > 0) ){
@@ -292,6 +283,46 @@ int main(){
 
 	if (players[0].HP <= 0 && players[1].HP <= 0 && players[2].HP <= 0) 
 	{	cout << "Enemies win!" << endl;	}
+}
+
+//MAIN
+int main(){
+	
+	int team;
+	
+	//for seeding
+	srand(static_cast<unsigned int>(time(0)));
+	
+	//objects
+ 	Team teams[4];
+	Entity profiles[12];
+	Player players[3];
+	Opposition enemies[3] = {Opposition(), Opposition(), Opposition()};			
+	
+	//set profiles team IDs
+	for (int i = 0; i <= 4; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{	profiles[j + (i * 3)].Team_ID = i + 1;	}
+	}
+	
+	//Gameloop
+	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. There are 4 teams. Choose your team (1-4)" << endl;
+	cin >> team;
+	
+	//set players based on the team you select
+	int start = (team - 1) * 3;
+	for (int k = 0; k < 3; k++)
+	{
+		players[k].name = profiles[start + k].name;
+		players[k].ATK = profiles[start + k].ATK;
+		players[k].SPD = profiles[start + k].SPD;
+		players[k].DEF = profiles[start + k].DEF;	
+		players[k].Team_ID = profiles[start + k].Team_ID;
+	}				
+	
+	Config(profiles, players, enemies);	
+	Battle(players, enemies);
 	
 	return(0);	
 };
