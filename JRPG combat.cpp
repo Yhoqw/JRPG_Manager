@@ -142,25 +142,10 @@ void Player :: Actions(Entity enemys[3]) {
 				cout << "Select who you wish to attack" "\n1." << enemys[0].name << "\n2." << enemys[1].name << "\n3." << enemys[2].name << endl;
 				cin >> target;
 				
-				//switch statement after selecting who to attack
-				switch (target){
-					
-					case 1: 
-						Attack_Check(enemys[0]);
-						break;
-					
-					case 2:
-						Attack_Check(enemys[1]);
-						break;						
-
-					case 3:
-						Attack_Check(enemys[2]);
-						break;
-						
-					default:
-						cout << "Invalid selection" << endl; 
-				}
+				target = target+1;
 				
+				Attack_Check(enemys[target]);
+								
 				break;
 			}
 				
@@ -218,7 +203,7 @@ void Opposition :: Action(Player &player) {
 class Team{
 	public:
 		string name;
-		int ID, wins, losses;
+		int ID, wins = 0, losses = 0;
 		Entity party_members[3];
 };
 
@@ -232,7 +217,7 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 	
 	//Management Actions
 	do{
-		cout << "Press 1.To Trade, 2.To Exit" << endl;
+		cout << "Press 1.To Trade, 2.Check Team Stats 3.To Exit" << endl;
 		cin >> input;
 		
 		switch(input)
@@ -240,6 +225,7 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 			//Trade player
 			case 1:
 			{
+				//for loop displays all npc data
 				for (int i = 0; i < 4; i++)
 				{
 					for (int j = 0; j < 3; j++)
@@ -273,8 +259,22 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 				break;
 			}
 			
-			//Exit case
+			//Check team stats
 			case 2:
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					SetColor(11);
+					cout << "Team: " << teams[i].name << " wins: " << teams[i].wins << " losses: " << teams[i].losses << endl;
+					cout << endl;
+					SetColor(7); 
+				}
+				
+				break;
+			}
+			
+			//Exit case
+			case 3:
 			{
 				loop = 0;
 				break;
@@ -383,7 +383,7 @@ int main(){
 	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. There are 4 teams. Choose your team (1-4)" << endl;
 	cin >> team_selection;
 			
-		//set players based on the team you select
+		//set players based on the team you select (maybe ill make seperate functions for these long loops
 		for (int k = 0; k < 3; k++)
 		{
 		players[k].name = teams[team_selection - 1].party_members[k].name;
