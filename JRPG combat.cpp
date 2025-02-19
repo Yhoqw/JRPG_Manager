@@ -14,9 +14,11 @@ HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 void SetColor(int color) //.h
 {	SetConsoleTextAttribute(hConsole, color);	}
 
-//Variable Arrays
+//Variables Arrays and constants
 string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
 string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi" };
+
+const int NUUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3;
 
 //create seperate functions for player actions?
 
@@ -38,9 +40,7 @@ class Entity{
 		
 		//Constructor (Ideally the reading file info will be done in the constructor)
 		Entity()
-		{	
-			generate_character();	
-		}
+		{	generate_character();	}
 };
  
 //Sub-classes of Entity
@@ -63,9 +63,7 @@ class Opposition : public Entity {
 void Entity :: Display_stats(){
 	
 	SetColor(11); // Light cyan for stats
-	
 	cout << name << " |HP: " << HP << ", ATK: " << ATK << ", SPD: " << SPD << ", DEF: " << DEF << " |Team: " << Team_ID << endl;
-	
 	SetColor(7); //Reset to white		
 };
 
@@ -117,11 +115,11 @@ void Entity :: generate_character(){
 };
 
 //Action input function
-void Player :: Actions(Entity enemys[3]) {
+void Player :: Actions(Entity enemys[]) {
 	
 	Display_stats();
 	
-	int input;
+	short input;
 	
 	//Define availaible actions
 	enum Actions
@@ -210,6 +208,7 @@ class Team{
 //Game (Non-Class functions) :- Maybe I should make a seperate class for handling game flow?
 void Config(Entity entitites[], Player players[], Opposition enemies[], Team teams[])
 {
+	
 	int Entitity_ID, player_ID;
 	int input, loop = 1; 
 	
@@ -226,11 +225,11 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 			case 1:
 			{
 				//for loop displays all npc data
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < number_Of_Teams ; i++)
 				{
-					for (int j = 0; j < 3; j++)
+					for (int j = 0; j < players_Per_Team; j++)
 					{
-						cout << "ID: " << (j + (i * 3)) + 1 << " ";
+						cout << "ID: " << (j + (i * players_Per_Team)) + 1 << " ";
 						teams[i].party_members[j].Display_stats();	
 					}		
 				}	
@@ -240,9 +239,8 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 				cout << "\n" "Enter the ID of the Entity you want to Trade with a player" << endl;
 				cin >> Entitity_ID;
 			
-				for (int i = 0; i < 3; i++)
+				for (int i = 0; i < players_Per_Team; i++)
 				{
-					//players[i].ID = 1+i;	
 					cout << "ID: " << i + 1 << " ";
 					players[i].Display_stats();				
 				}
@@ -262,14 +260,13 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 			//Check team stats
 			case 2:
 			{
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < number_Of_Teams; i++)
 				{
 					SetColor(11);
 					cout << "Team: " << teams[i].name << " wins: " << teams[i].wins << " losses: " << teams[i].losses << endl;
 					cout << endl;
 					SetColor(7); 
 				}
-				
 				break;
 			}
 			
@@ -340,6 +337,24 @@ void Battle(Player players[], Opposition enemies[], Team &team, Team &team_selec
 	SetColor(7);
 }
 
+//CPU Sim function
+void Battle_simulation(Team team1, Team team2)
+{
+	
+}
+
+//Calander function
+void Schedule(Team teams[])
+{
+	
+}
+
+//Draft function
+void Draft()
+{
+	
+}
+
 //MAIN
 int main(){
 	
@@ -386,16 +401,16 @@ int main(){
 		//set players based on the team you select (maybe ill make seperate functions for these long loops
 		for (int k = 0; k < 3; k++)
 		{
-		players[k].name = teams[team_selection - 1].party_members[k].name;
-		players[k].ATK = teams[team_selection - 1].party_members[k].ATK;
-		players[k].SPD = teams[team_selection - 1].party_members[k].SPD;
-		players[k].DEF = teams[team_selection - 1].party_members[k].DEF;
-		players[k].Team_ID = teams[team_selection - 1].party_members[k].Team_ID;
+			players[k].name = teams[team_selection - 1].party_members[k].name;
+			players[k].ATK = teams[team_selection - 1].party_members[k].ATK;
+			players[k].SPD = teams[team_selection - 1].party_members[k].SPD;
+			players[k].DEF = teams[team_selection - 1].party_members[k].DEF;
+			players[k].Team_ID = teams[team_selection - 1].party_members[k].Team_ID;
 		}
-						
+	
+	//Actual Running game						
 	do
 	{
-		
 		system("cls");
 		Config(profiles, players, enemies, teams);	
 		system("cls");
@@ -410,7 +425,6 @@ int main(){
 		cin >> exit;
 		
 	}while(exit != 'y' || exit != 'Y');
-	
 	
 	return(0);	
 };
