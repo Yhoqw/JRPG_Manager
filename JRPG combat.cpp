@@ -160,9 +160,9 @@ void Player :: Actions(Entity enemys[]) {
 				cout << "Select who you wish to attack" "\n1." << enemys[0].name << "\n2." << enemys[1].name << "\n3." << enemys[2].name << endl;
 				cin >> target;
 				
-				target = target+1;
+				int targeted = target-1; //Because the IDs apear as 1, 2, 3 for user but 0, 1, 2 in the array index
 				
-				Attack_Check(enemys[target]);
+				Attack_Check(enemys[targeted]);
 								
 				break;
 			}
@@ -171,7 +171,7 @@ void Player :: Actions(Entity enemys[]) {
 			{
 				SPD += 5;
 				SetColor(10); //.h
-				cout << "SPD UP +5" << endl;
+				cout << "SPD UP +5\n" << endl;
 				break;
 			}
 				
@@ -179,7 +179,7 @@ void Player :: Actions(Entity enemys[]) {
 			{
 				DEF += 5;
 				SetColor(10); //.h
-				cout << "DEF UP +5" << endl;
+				cout << "DEF UP +5\n" << endl;
 				break;
 			}
 					
@@ -187,7 +187,7 @@ void Player :: Actions(Entity enemys[]) {
 			{
 				ATK += 5;
 				SetColor(10); //.h
-				cout << "ATK UP +5" << endl;
+				cout << "ATK UP +5\n" << endl;
 				break;
 			}
 	
@@ -195,14 +195,15 @@ void Player :: Actions(Entity enemys[]) {
 			{
 				HP += 30;
 				SetColor(10); //.h
-				cout << "Healed" << name << " +30" << endl;
+				cout << "Healed" << name << " +30\n" << endl;
 				break;
 			}
 				
         	default: 
 			{
 				SetColor(14);
-        	    cout << "Invalid choice!" << endl;
+        	    cout << "Invalid choice!\n" << endl;
+        	    break;
 			}						
 		}
 		
@@ -475,7 +476,7 @@ int main(){
 		for (int j = 0; j < PLAYERS_PER_TEAM; j++)
 		{	
 			profiles[j + ( i * PLAYERS_PER_TEAM )].Team_ID = i + 1;	
-			teams[i].party_members[j] = profiles[j + ( i *PLAYERS_PER_TEAM )];
+			teams[i].party_members[j] = profiles[j + ( i *PLAYERS_PER_TEAM )]; //The party memebers array takes stats from profiles array
 		}
 	}
 	
@@ -510,7 +511,7 @@ int main(){
 		cout << "Exit (y/n)" << endl;
 		cin >> exit;
 		
-	}while(exit != 'y' || exit != 'Y');
+	}while(exit != 'y' || exit != 'Y' || day != 7);
 	
 	return(0);	
 };
