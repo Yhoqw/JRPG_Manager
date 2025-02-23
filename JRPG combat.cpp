@@ -16,10 +16,10 @@ void SetColor(int color) //.h
 
 //Variables Arrays and constants
 string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
-string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi" };
+string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi", " Lion-Heart" };
 
-string Team_name1[4];
-string Team_name2[4];
+string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga"};
+string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate"};
 
 const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3; //I could use #define for this instead
 
@@ -31,7 +31,7 @@ class Entity{
 		
 		//Entity Class Attributes/Member variables
 		string name;	
-		int HP = 100, ATK, SPD, DEF, ID, Team_ID = 1;
+		int HP = 50, ATK, SPD, DEF, ID, Team_ID = 1;
 		
 		bool Turn = true;
 
@@ -69,15 +69,11 @@ class Team{
 		bool player_Controlled = false;
 		Entity party_members[3];
 		
-		void calulate_OVR()
-		{
-			for (int i = 0; i < PLAYERS_PER_TEAM; i++)
-			{
-				OVR_ATK += party_members[i].ATK;
-			}
-			 
-			OVR_ATK /= PLAYERS_PER_TEAM; 
-		}
+		void calulate_OVR();	
+		void Display_stats();
+		
+		Team()
+		{	name = Team_name1[rand() % (sizeof(Team_name1) / sizeof(Team_name1[0]))] + Team_name2[rand() % (sizeof(Team_name2) / sizeof(Team_name2[0]))];	}
 };
 
 //METHODS
@@ -134,7 +130,7 @@ void Entity :: generate_character(){
 	
 };
 
-//Player/Opposition methods
+//Player|Opposition methods
 void Player :: Actions(Entity enemys[]) {
 	
 	Display_stats();
@@ -218,6 +214,25 @@ void Opposition :: Action(Player &player) {
     Attack_Check(player);
 }
 
+//Team methods
+void Team :: calulate_OVR() {
+	
+	for (int i = 0; i < PLAYERS_PER_TEAM; i++)
+	{	OVR_ATK += party_members[i].ATK;	}
+		 
+	OVR_ATK /= PLAYERS_PER_TEAM; 
+}
+
+void Team :: Display_stats(){
+
+	SetColor(11);
+	cout << "Team: " << name << " wins: " << wins << " losses: " << losses << endl;
+	cout << endl;
+	SetColor(7); 	
+	
+}
+
+
 //Game (Non-Class functions) :- Maybe I should make a seperate class for handling game flow?
 
 void Battle(Player players[], Opposition enemies[], Team &opposition_team, Team &player_team) //Where the combat happens
@@ -277,8 +292,7 @@ void Battle(Player players[], Opposition enemies[], Team &opposition_team, Team 
 	SetColor(7);
 }
 
-//CPU Sim function
-void Battle_Simulation(Team &team1, Team &team2)
+void Battle_Simulation(Team &team1, Team &team2) //CPU Battles
 {	
 	team1.calulate_OVR();
 	team2.calulate_OVR();
@@ -301,19 +315,30 @@ void Battle_Simulation(Team &team1, Team &team2)
 	}
 }
 
-//Calander function
-void Schedule(Team teams[], Player players[], Opposition enemies[], short &day)
+void Battle_Selector(Player players[], Opposition enemies[], Team teams[], int TeamA, int TeamB)
 {
-	int Player_controlled_ID;
-	
-	for (int i = 0; i < NUMBER_OF_TEAMS; i++)
+    // If the player’s team is involved, run an interactive battle
+    if (teams[TeamA].player_Controlled == true) 
 	{
-		if (teams[i].player_Controlled == true)
-		{	
-			Player_controlled_ID = i;	
-			break;
-		}
-	}
+        cout << "Player's team is in this match!" << endl;
+        Battle(players, enemies, teams[TeamA], teams[TeamB]); 
+    }
+
+    else if (teams[TeamB].player_Controlled == true) 
+	{
+        cout << "Player's team is in this match!" << endl;
+        Battle(players, enemies, teams[TeamA], teams[TeamB]); 
+    }
+	
+    else 
+	{
+        cout << "CPU match simulation..." << endl;
+        Battle_Simulation(teams[TeamA], teams[TeamB]);
+    }	
+}
+
+void Schedule(Team teams[], Player players[], Opposition enemies[], short &day, int Player_controlled_ID)
+{
 	
     // Match schedule using a 2D array
     int matchups[6][2] = 
@@ -331,22 +356,10 @@ void Schedule(Team teams[], Player players[], Opposition enemies[], short &day)
     cout << "Day " << (day + 1) << ": " << teams[teamA].name << " vs " << teams[teamB].name << endl;
     Sleep(1000); 
 
-    // If the player’s team is involved, run an interactive battle
-    if (teamA == Player_controlled_ID || teamB == Player_controlled_ID) 
-	{
-        cout << "Player's team is in this match!" << endl;
-        Battle(players, enemies, teams[teamB], teams[teamA]); // Adjust accordingly
-    }
-		 
-    else 
-	{
-        cout << "CPU match simulation..." << endl;
-        Battle_Simulation(teams[teamA], teams[teamB]);
-    }
+	Battle_Selector(players, enemies, teams, teamA, teamB);
         
     day++;
 }
-
 
 //Draft function
 void Draft()
@@ -360,16 +373,15 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 	int Entitity_ID, player_ID;
 	int input, loop = 1; 
 	
-	enum Actions{Trade = 1, Team_Stats, CPU_SIM, Exit};
+	enum Actions{Trade = 1, Team_Stats, Sim};
 	
 	//Management Actions
 	do{
-		cout << "Press 1.To Trade, 2.Check Team Stats 3.Sim CPU Game 4.To Exit" << endl;
+		cout << "Press 1.To Trade, 2.Check Team Stats 3.To Simulate to next day" << endl;
 		cin >> input;
 		
 		switch(input)
 		{
-			//Trade player
 			case Trade:
 			{
 				for (int i = 0; i < NUMBER_OF_TEAMS; i++) //displays all npc data
@@ -404,39 +416,29 @@ void Config(Entity entitites[], Player players[], Opposition enemies[], Team tea
 				
 				break;
 			}
-			
-			//Check team stats
+		
 			case Team_Stats:
 			{
 				for (int i = 0; i < NUMBER_OF_TEAMS; i++)
-				{
-					SetColor(11);
-					cout << "Team: " << teams[i].name << " wins: " << teams[i].wins << " losses: " << teams[i].losses << endl;
-					cout << endl;
-					SetColor(7); 
-				}
+				{	teams[i].Display_stats();	}
+				
 				break;
 			}
-			
-			//Battle team function
-			case CPU_SIM:
-			{	
-				cout << "Select the teams you want to play each other?" << endl;
-				Battle_Simulation(teams[1], teams[2]);
-				break;
-			}
-			
+						
 			//Exit case
-			case Exit:
+			case Sim:
 			{
 				loop = 0;
 				break;
 			}
+			
+			default:
+				break;
 		}
 	} while (loop != 0);
 }
 
-//A few functions for convinience and to make int main and other funtions more readable
+//A few functions for convenience and to make int main and other funtions more readable
 void display_Title(){
 	
 	SetColor(6); //Yellow
@@ -479,9 +481,8 @@ int main(){
 			teams[i].party_members[j] = profiles[j + ( i *PLAYERS_PER_TEAM )]; //The party memebers array takes stats from profiles array
 		}
 	}
-	
+		
 	//Gameloop
-	
 	display_Title(); //Title Screen
 	
 	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. There are 4 teams. Choose your team (1-4)" << endl;
@@ -489,7 +490,7 @@ int main(){
 		
 	teams[team_selection - 1].player_Controlled = true;
 			
-	//set players based on the team you select (maybe ill make seperate functions for these long loops)
+	//set players based on the team you select (maybe ill make seperate functions for these longer loops)
 	for (int i = 0; i < PLAYERS_PER_TEAM; i++)
 	{
 		players[i].name = teams[team_selection - 1].party_members[i].name;
@@ -506,12 +507,27 @@ int main(){
 		Config(profiles, players, enemies, teams);	
 		system("cls");
 
-		Schedule(teams, players, enemies, day);
+		Schedule(teams, players, enemies, day, team_selection);
 			
 		cout << "Exit (y/n)" << endl;
 		cin >> exit;
 		
 	}while(exit != 'y' || exit != 'Y' || day != 7);
+	
+	//Code for the final logic
+	int Finalist1 = 0;
+	int Finalist2 = 1;
+	
+	for (int i = 0; i < NUMBER_OF_TEAMS; i++) //To set the finalists 
+	{
+		if (teams[i].wins > teams[Finalist1].wins)
+			{	Finalist1 = i;	}
+		
+		else if(teams[i].wins > teams[Finalist2].wins && Finalist1 != i)
+			{	Finalist2 = i;	}
+	}
+
+	Battle_Selector(players, enemies, teams, Finalist1, Finalist2);
 	
 	return(0);	
 };
