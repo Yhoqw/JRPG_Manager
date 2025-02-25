@@ -14,14 +14,14 @@ HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 void SetColor(int color) 
 {	SetConsoleTextAttribute(hConsole, color);	}
 
-//Variables Arrays and constants
+//Variables Arrays and constants (Dont mind the names these are taken from a list of popular JRPGs)
 string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
 string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi", " Lion-Heart" };
 
-string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga"};
-string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate"};
+string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum"};
+string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
-const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3; //I could use #define for this instead
+const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 6; //I could use #define for this instead
 
 //create seperate functions for player actions?
 
@@ -81,15 +81,33 @@ class BattleManager{
 		static void Battle_Selector();
 };
 
+class Schedule{
+	private:
+		int Day = 0;
+		int matchups[6][2] = {	{0, 1} ,{2, 3}, {0, 2}, {1, 3}, {0, 3}, {1, 2}  };
+		Team* teams;
+	
+	public:
+		void reset() {Day = 0;}	// Reset for a new season
+		bool battles_Remaining() {return Day < 6;} // Check if the season is ongoing
+		void Matchup();
+		
+		Schedule(Team* teamsPtr) : teams(teamsPtr) 
+		{
+			Day = 0;
+		}
+};
+
 class GameManager {
-    private:
-    	int Day = 0;
+    private:	
         Team NPC_Teams[NUMBER_OF_TEAMS];
+        Schedule season;
         
     public:
     	void Run_Game();
-    	void Schedule();
     	int get_Day();
+    	
+    	GameManager() : season(NPC_Teams) {}
 };
 
 class ConsoleManager {
@@ -173,30 +191,30 @@ void BattleManager :: Battle_Selector(){
 	cout << "WIP" << endl;
 }
 
-void GameManager :: Schedule(){
-
-    int matchups[6][2] = 
+void Schedule :: Matchup(){
+	
+    if (!battles_Remaining()) 
 	{
-        {0, 1} ,{2, 3}, {0, 2}, {1, 3}, {0, 3}, {1, 2}  
-    };
+        cout << "Season is over! No more battles" << endl;
+        return;
+    }
 	
     int teamA = matchups[Day][0];
     int teamB = matchups[Day][1];
 
-    cout << "Day " << (Day+1) << ": " << NPC_Teams[teamA].get_Name() << " vs " << NPC_Teams[teamB].get_Name() << endl;
+    cout << "Day " << (Day+1) << ": " << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << endl;
     Sleep(1000); 
 
 	BattleManager::Battle_Selector();
 	
     Day++;	
-	
 }
 
 void GameManager :: Run_Game(){
 	
-	while (Day != 7)
+	while ( season.battles_Remaining() )
 	{	
-		Schedule();	
+		season.Matchup();		
 	}	
 }
 
