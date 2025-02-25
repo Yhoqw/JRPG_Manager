@@ -68,6 +68,9 @@ class Team{
 		int get_Wins();
 		int get_Losses();
 		
+		void add_Win() { wins++; };
+		void add_Loss() { losses++; };		
+		
 		Team()
 		{	
 			name = Team_name1[rand() % (sizeof(Team_name1) / sizeof(Team_name1[0]))] + Team_name2[rand() % (sizeof(Team_name2) / sizeof(Team_name2[0]))];	
@@ -77,8 +80,9 @@ class Team{
 
 class BattleManager{
 	public: 
-		static void Battle_Simulation();
-		static void Battle_Selector();
+		static void Battle_Simulation(Team &team1, Team &team2);
+		static void Declare_Winner(Team &winner, Team &loser);
+		
 };
 
 class Schedule{
@@ -105,7 +109,7 @@ class GameManager {
         
     public:
     	void Run_Game();
-    	int get_Day();
+    	void Management_Mode();
     	
     	GameManager() : season(NPC_Teams) {}
 };
@@ -183,12 +187,25 @@ void Team :: Display_stats(){
 	
 }
 
-void BattleManager :: Battle_Simulation(){ 			 
+void BattleManager::Declare_Winner(Team &winner, Team &loser){
 	
+    cout << "\n" << winner.get_Name() << " wins!\n" << endl;
+    winner.add_Win();
+    loser.add_Loss();
 }
 
-void BattleManager :: Battle_Selector(){
-	cout << "WIP" << endl;
+void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
+	
+    team1.get_OVR(); 
+    team2.get_OVR();
+    
+    int victory_Threshold = 50 + team1.get_OVR() - team2.get_OVR();
+    int team1_Victory = rand() % 100;
+
+    if (team1_Victory > victory_Threshold) 
+	{	Declare_Winner(team1, team2);	} 
+	else
+	{	Declare_Winner(team2, team1);	}
 }
 
 void Schedule :: Matchup(){
@@ -202,20 +219,45 @@ void Schedule :: Matchup(){
     int teamA = matchups[Day][0];
     int teamB = matchups[Day][1];
 
-    cout << "Day " << (Day+1) << ": " << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << endl;
+    cout << "\nDay " << (Day+1) << ": " << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << "\n" << endl;
     Sleep(1000); 
 
-	BattleManager::Battle_Selector();
+	BattleManager::Battle_Simulation(teams[teamA], teams[teamB]);
 	
     Day++;	
 }
 
 void GameManager :: Run_Game(){
 	
-	while ( season.battles_Remaining() )
+	while ( season.battles_Remaining() ) //Dont use system cls right now for debugging purposes 
 	{	
-		season.Matchup();		
+		season.Matchup();
+		Management_Mode();
 	}	
+}
+
+void GameManager :: Management_Mode(){
+	
+	int input, loop = 1; 
+	enum Actions{SIM_DAY = 1};
+	
+	do{
+		cout << "\nPress 1.To Simulate to next day\n" << endl;
+		cin >> input;
+		
+		switch(input)
+		{				
+			//Exit case
+			case SIM_DAY:
+			{
+				loop = 0;
+				break;
+			}
+			
+			default:
+				break;
+		}
+	} while (loop != 0);	
 }
 
 void ConsoleManager :: PrintTitle(){
