@@ -139,7 +139,7 @@ int main()
 	srand(static_cast<unsigned int>(time(0)));	//for seeding
 	
 	ConsoleManager :: PrintTitle();	
-	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams they will play each in simulations of JRPG style \n combat by the end of the season 2 teams will play a final to pick a winner" << endl;
+	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams they will play each in simulations of JRPG style \ncombat by the end of the season 2 teams will play a final to pick a winner" << endl;
 }
 
 
