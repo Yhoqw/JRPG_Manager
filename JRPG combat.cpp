@@ -21,7 +21,7 @@ string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Cres
 string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum"};
 string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
-const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 6; //I could use #define for this instead
+const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 7; //I could use #define for this instead
 
 //create seperate functions for player actions?
 
@@ -69,7 +69,8 @@ class Team{
 		int get_Losses();
 		
 		void add_Win() { wins++; };
-		void add_Loss() { losses++; };		
+		void add_Loss() { losses++; };	
+		void reset_Stats();	
 		
 		Team()
 		{	
@@ -88,13 +89,13 @@ class BattleManager{
 class Schedule{
 	private:
 		int Day = 0;
-		int matchups[6][2] = {	{0, 1} ,{2, 3}, {0, 2}, {1, 3}, {0, 3}, {1, 2}  };
+		int matchups[7][2] = {	{0,0}, {1, 0} ,{2, 3}, {0, 2}, {1, 3}, {0, 3}, {1, 2}  };
 		Team* teams;
 	
 	public:
 		void reset() {Day = 0;}	// Reset for a new season
-		bool battles_Remaining() {return Day < 6;} // Check if the season is ongoing
 		void Matchup();
+		int get_Days();
 		
 		Schedule(Team* teamsPtr) : teams(teamsPtr) 
 		{
@@ -110,6 +111,11 @@ class GameManager {
     public:
     	void Run_Game();
     	void Management_Mode();
+    	void Display_Standings();
+    	void Final();
+    	void Reset_TeamStats();
+    	
+    	void Run_For_All_Teams(void (Team::*func)()); //Function pointer which runs a for loop cycling through teams
     	
     	GameManager() : season(NPC_Teams) {}
 };
@@ -178,6 +184,14 @@ int Team :: get_OVR(){
 	return (OVR_ATK /= PLAYERS_PER_TEAM);
 }
 
+int Team :: get_Wins(){
+	return(wins);
+}
+
+int Team :: get_Losses(){
+	return(losses);
+}
+
 void Team :: Display_stats(){
 
 	SetColor(11);
@@ -187,9 +201,17 @@ void Team :: Display_stats(){
 	
 }
 
+void Team :: reset_Stats(){
+	wins = 0;
+	losses = 0;
+}
+
 void BattleManager::Declare_Winner(Team &winner, Team &loser){
 	
-    cout << "\n" << winner.get_Name() << " wins!\n" << endl;
+	SetColor(10); // Green 
+    cout << "\n" << winner.get_Name() << " win!\n" << endl;
+    SetColor(7); //Reset to white	
+    
     winner.add_Win();
     loser.add_Loss();
 }
@@ -208,18 +230,30 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
 	{	Declare_Winner(team2, team1);	}
 }
 
+ int Schedule :: get_Days(){
+	return Day;
+}
+
 void Schedule :: Matchup(){
 	
-    if (!battles_Remaining()) 
+	cout << "Matchup is working" << endl; //Debugging
+	
+    if (Day >= TOTAL_MATCHES ) //stop after playing all games in the season
 	{
         cout << "Season is over! No more battles" << endl;
         return;
     }
+    
+    if (Day == 0)
+    {
+    	Day++;
+    	return;
+	}
 	
     int teamA = matchups[Day][0];
     int teamB = matchups[Day][1];
 
-    cout << "\nDay " << (Day+1) << ": " << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << "\n" << endl;
+    cout << "\nDay " << (Day) << ": " << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << "\n" << endl;
     Sleep(1000); 
 
 	BattleManager::Battle_Simulation(teams[teamA], teams[teamB]);
@@ -227,22 +261,59 @@ void Schedule :: Matchup(){
     Day++;	
 }
 
+void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
+	
+    for (int i = 0; i < NUMBER_OF_TEAMS; i++) 
+	{
+        (NPC_Teams[i].*method)();  // Call the function pointer on each team
+    }
+}
+
+void GameManager :: Final(){
+	
+	cout << "Finals!" << endl;
+	
+	//Code for the final logic
+	int Finalist1_index = 0;
+	int Finalist2_index = 1;
+	
+	for (int i = 0; i < NUMBER_OF_TEAMS; i++) //To set the finalists 
+	{
+		if ( NPC_Teams[i].get_Wins() > NPC_Teams[Finalist1_index].get_Wins() )
+			{	Finalist1_index = i;	}
+		
+		else if(NPC_Teams[i].get_Wins() > NPC_Teams[Finalist2_index].get_Wins() && Finalist1_index != i)
+			{	Finalist2_index = i;	}
+	} 
+	
+    cout << NPC_Teams[Finalist1_index].get_Name() << " vs " << NPC_Teams[Finalist2_index].get_Name() << "\n" << endl;
+    Sleep(1000); 	
+	
+	BattleManager::Battle_Simulation(NPC_Teams[Finalist1_index], NPC_Teams[Finalist2_index]);
+	
+}
+
 void GameManager :: Run_Game(){
 	
-	while ( season.battles_Remaining() ) //Dont use system cls right now for debugging purposes 
+	cout << "Run Game is working" << endl;//Debug
+	
+	while ( season.get_Days() < TOTAL_MATCHES ) //Dont use system cls right now for debugging purposes 
 	{	
 		season.Matchup();
 		Management_Mode();
 	}	
+	
+	Display_Standings();
+	Final();
 }
 
 void GameManager :: Management_Mode(){
 	
 	int input, loop = 1; 
-	enum Actions{SIM_DAY = 1};
-	
+	enum Actions{SIM_DAY = 1, STANDINGS};
+		
 	do{
-		cout << "\nPress 1.To Simulate to next day\n" << endl;
+		cout << "\nPress 1.To Simulate to next day 2.To Show Standings\n" << endl;
 		cin >> input;
 		
 		switch(input)
@@ -254,10 +325,20 @@ void GameManager :: Management_Mode(){
 				break;
 			}
 			
+			case STANDINGS:
+			{
+				Display_Standings();
+			}
+				
 			default:
 				break;
 		}
 	} while (loop != 0);	
+}
+
+void GameManager :: Display_Standings(){
+	
+	Run_For_All_Teams(&Team::Display_stats);
 }
 
 void ConsoleManager :: PrintTitle(){
@@ -274,6 +355,7 @@ void ConsoleManager :: PrintTitle(){
 	cout<<"__________________________________________________________________________________________________________________________"<<endl;		
 }
 
+
 //MAIN
 int main(){
 	
@@ -287,3 +369,4 @@ int main(){
 	
 	return(0);	
 };
+
