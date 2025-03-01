@@ -38,10 +38,16 @@ class Entity{
 		void generate_character();
 		void Reset_Stats();
 		
+		string get_Name();
 		int get_HP();
 		int get_ATK();
 		int get_SPD();
 		int get_DEF();
+		
+		void set_HP(int new_HP) {HP = new_HP;}
+		void set_ATK(int new_ATK) {ATK = new_ATK;}
+		void set_SPD(int new_SPD) {SPD = new_SPD;}
+		void set_DEF(int new_DEF) {DEF = new_DEF;}
 		
 		//Constructor (Ideally the reading file info will be done in the constructor)
 		Entity()
@@ -112,10 +118,14 @@ class GameManager {
     public:
     	void Run_Game();
     	void Management_Mode();
+    	
     	void Display_Standings();
     	void Display_Roster();
     	void Final();
+    	void Trade();
+    	
     	void Reset_TeamStats();
+    	void Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id);
     	
     	void Run_For_All_Teams(void (Team::*func)()); //Function pointer which runs a for loop cycling through teams
     	
@@ -155,6 +165,10 @@ void Entity :: Reset_Stats(){
 	Cur_ATK = ATK;
 	Cur_SPD = SPD;
 	Cur_DEF = DEF;
+}
+
+string Entity :: get_Name(){
+	return(name);
 }
 
 int Entity :: get_HP(){
@@ -331,10 +345,10 @@ void GameManager :: Run_Game(){
 void GameManager :: Management_Mode(){
 	
 	int input, loop = 1; 
-	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS};
+	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE};
 		
 	do{
-		cout << "\nPress 1.To Simulate to next day 2.To Show Standings 3.To Show Rosters\n" << endl;
+		cout << "\nPress 1.To Simulate to next day 2.To Show Standings 3.To Show Rosters 4.To Trade\n" << endl;
 		cin >> input;
 		
 		switch(input)
@@ -357,6 +371,12 @@ void GameManager :: Management_Mode(){
 				break;
 			}
 			
+			case TRADE:
+			{
+				Trade();
+				break;
+			}
+			
 			default:
 				break;
 		}
@@ -371,6 +391,44 @@ void GameManager :: Display_Standings(){
 void GameManager :: Display_Roster(){
 	
 	Run_For_All_Teams(&Team::Display_Members);
+}
+
+void GameManager :: Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id) {
+	
+    if (teamA_id >= NUMBER_OF_TEAMS || teamB_id >= NUMBER_OF_TEAMS || playerA_id >= PLAYERS_PER_TEAM || playerB_id >= PLAYERS_PER_TEAM) //Error
+	{
+        cout << "Invalid indices. Swap failed" << endl;
+        return;
+    }
+	
+	//Actual Swap
+    Entity temp = NPC_Teams[teamA_id].Members[playerA_id];
+
+    NPC_Teams[teamA_id].Members[playerA_id] = NPC_Teams[teamB_id].Members[playerB_id];
+    NPC_Teams[teamB_id].Members[playerB_id] = temp;
+
+    cout << "Traded " << NPC_Teams[teamA_id].Members[playerA_id].get_Name() << " for " << NPC_Teams[teamB_id].Members[playerB_id].get_Name() << endl;
+}
+
+void GameManager :: Trade(){
+	
+	int teamA_id, playerA_id, teamB_id, playerB_id;
+	
+	cout << "Choose the team you wnat to trade a player from " << endl;
+	cin >> teamA_id;
+	NPC_Teams[teamA_id-1].Display_Members();
+	
+	cout << "Choose the player ID you want to trade " << endl;
+	cin >> playerA_id;
+	
+	cout << "Choose the team you wnat to trade a player to " << endl;
+	cin >> teamB_id;
+	NPC_Teams[teamB_id-1].Display_Members();
+	
+	cout << "Choose the player ID you want to trade " << endl;
+	cin >> playerB_id;	
+	
+	Swap_Entities(teamA_id-1, playerA_id-1, teamB_id-1, playerB_id-1);
 }
 
 //Console Manager Functions
