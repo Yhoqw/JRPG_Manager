@@ -21,7 +21,7 @@ string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Cres
 string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum"};
 string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
-const int NUMBER_OF_TEAMS = 5, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 7; //I could use #define for this instead
+const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 7; //I could use #define for this instead
 
 //create seperate functions for player actions?
 
@@ -29,7 +29,7 @@ const int NUMBER_OF_TEAMS = 5, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 7; //I coul
 class Entity{
 	protected:
 		string name;	
-		int HP = 50, ATK, SPD, DEF, ID, Team_ID = 1;
+		int HP = 50, ATK, SPD, DEF;
 		int Cur_HP = HP, Cur_ATK = ATK, Cur_SPD = SPD, Cur_DEF = DEF;
 		
 	public:
@@ -62,6 +62,7 @@ class Team{
 		Entity Members[PLAYERS_PER_TEAM];
 		
 		void Display_stats();
+		void Display_Members();
 		
 		string get_Name();
 		int get_OVR();
@@ -112,6 +113,7 @@ class GameManager {
     	void Run_Game();
     	void Management_Mode();
     	void Display_Standings();
+    	void Display_Roster();
     	void Final();
     	void Reset_TeamStats();
     	
@@ -125,13 +127,14 @@ class ConsoleManager {
         static void PrintTitle();
 };
 
+
 //METHODS
 
 //Entity Methods
 void Entity :: Display_Stats(){
 	
 	SetColor(11); // Light cyan for stats
-	cout << name << " |HP: " << Cur_HP << ", ATK: " << Cur_ATK << ", SPD: " << Cur_SPD << ", DEF: " << Cur_DEF << " |Team: " << Team_ID << endl;
+	cout << name << " |HP: " << Cur_HP << ", ATK: " << Cur_ATK << ", SPD: " << Cur_SPD << ", DEF: " << Cur_DEF << endl;
 	SetColor(7); //Reset to white		
 };
 
@@ -170,6 +173,7 @@ int Entity :: get_DEF(){
 	return(DEF);
 };
 
+//Team Methods
 string Team :: get_Name(){
 	return(name);
 }
@@ -194,18 +198,33 @@ int Team :: get_Losses(){
 
 void Team :: Display_stats(){
 
-	SetColor(11);
+	SetColor(3); //Blue
 	cout << "Team: " << name << " wins: " << wins << " losses: " << losses << endl;
+	SetColor(7); //White
 	cout << endl;
-	SetColor(7); 	
-	
+
 }
+
+void Team :: Display_Members(){
+	
+	SetColor(3); //Blue
+	cout << name << ": " << endl;
+	SetColor(7); //White
+	
+    for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+	{
+        Members[i].Display_Stats(); 
+    }
+    
+    cout << endl;
+};
 
 void Team :: reset_Stats(){
 	wins = 0;
 	losses = 0;
 }
 
+//Battle Manager Functions
 void BattleManager::Declare_Winner(Team &winner, Team &loser){
 	
 	SetColor(10); // Green 
@@ -230,6 +249,7 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
 	{	Declare_Winner(team2, team1);	}
 }
 
+//Schedule Methods
  int Schedule :: get_Days(){
 	return Day;
 }
@@ -261,6 +281,7 @@ void Schedule :: Matchup(){
     Day++;	
 }
 
+//Game Manager Methods
 void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
 	
     for (int i = 0; i < NUMBER_OF_TEAMS; i++) 
@@ -310,15 +331,14 @@ void GameManager :: Run_Game(){
 void GameManager :: Management_Mode(){
 	
 	int input, loop = 1; 
-	enum Actions{SIM_DAY = 1, STANDINGS};
+	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS};
 		
 	do{
-		cout << "\nPress 1.To Simulate to next day 2.To Show Standings\n" << endl;
+		cout << "\nPress 1.To Simulate to next day 2.To Show Standings 3.To Show Rosters\n" << endl;
 		cin >> input;
 		
 		switch(input)
 		{				
-			//Exit case
 			case SIM_DAY:
 			{
 				loop = 0;
@@ -328,8 +348,15 @@ void GameManager :: Management_Mode(){
 			case STANDINGS:
 			{
 				Display_Standings();
+				break;
 			}
 				
+			case ROSTERS:
+			{
+				Display_Roster();
+				break;
+			}
+			
 			default:
 				break;
 		}
@@ -341,6 +368,12 @@ void GameManager :: Display_Standings(){
 	Run_For_All_Teams(&Team::Display_stats);
 }
 
+void GameManager :: Display_Roster(){
+	
+	Run_For_All_Teams(&Team::Display_Members);
+}
+
+//Console Manager Functions
 void ConsoleManager :: PrintTitle(){
 	
 	SetColor(6); //Yellow
