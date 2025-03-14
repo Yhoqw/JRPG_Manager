@@ -60,9 +60,17 @@ class Entity{
 			Reset_Stats();
 		}
 };
+
+class Player : public Entity {
+    public:
+        Player() {
+            generate_character();
+            Reset_Stats();
+        }
+};
  
 class Team{
-	private:
+	protected:
 		string name;
 		short ID, wins = 0, losses = 0;
 		int OVR_ATK;
@@ -91,6 +99,19 @@ class Team{
 };
 
 class PlayerTeam : public Team{
+	public:
+		Player Members[PLAYERS_PER_TEAM];
+		
+        PlayerTeam() 
+		{
+            name = Team_name1[rand() % (sizeof(Team_name1) / sizeof(Team_name1[0]))] + Team_name2[rand() % (sizeof(Team_name2) / sizeof(Team_name2[0]))];
+
+            // Initialize player members
+            for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+			{
+                Members[i] = Player(); 
+            }
+    	}
 };
 
 class BattleManager{
