@@ -53,6 +53,8 @@ class Entity{
 		void set_SPD(int new_SPD) {SPD = new_SPD;}
 		void set_DEF(int new_DEF) {DEF = new_DEF;}
 		
+		virtual void Actions();
+		
 		//Constructor (Ideally the reading file info will be done in the constructor)
 		Entity()
 		{	
@@ -63,7 +65,12 @@ class Entity{
 
 class Player : public Entity {
     public:
-        Player() {
+    	void Attack();
+    	
+    	void Actions() override;
+    	
+        Player() 
+		{
             generate_character();
             Reset_Stats();
         }
@@ -216,6 +223,67 @@ int Entity :: get_DEF(){
 	return(DEF);
 };
 
+void Entity :: Actions(){
+	Display_Stats();
+	//Attack Check
+}
+
+void Player :: Actions(){
+	
+	Display_Stats();
+	int input;
+	
+	//Define availaible actions
+	enum Actions
+	{	Attack = 1, SPD_UP, DEF_UP, ATK_UP, Heal	};	
+	
+	cout << "1.Attack \n2.SPD UP \n3.DEF UP \n4.ATK UP \n5.Heal" << endl;
+	cin >> input;	
+
+	switch (input)
+	{
+		case Attack:
+		{	
+			break;
+		}
+				
+		//Make function to up a given stat by a given amount depending on the parameters?
+		case SPD_UP:
+		{	
+
+			break;
+		}
+				
+		case DEF_UP:
+		{
+
+			break;
+		}
+					
+		case ATK_UP:
+		{
+
+			break;
+		}
+	
+		case Heal:
+		{
+		
+			break;
+		}
+		
+        default:
+		{
+			SetColor(14);
+            cout << "Invalid choice!\n" << endl;
+            break;
+		}
+	}
+		
+		SetColor(7); //.h
+    	Sleep(500); //.h
+}
+
 //Team Methods
 string Team :: get_Name(){
 	return(name);
@@ -329,7 +397,7 @@ void Schedule :: Matchup(){
 //Game Manager Methods
 void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
 	
-	(PC_Team.*method)();
+	(PC_Team.*method)(); //Call the function for the player controlled team
 	
     for (int i = 0; i < NUMBER_OF_TEAMS; i++) 
 	{
