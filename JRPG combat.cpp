@@ -8,6 +8,8 @@
 
 using namespace std;
 
+#define DEBUG  // Comment this line to disable debug messages
+
 //Windows h (all windows h stuff will be mentioned with a (.h) comment
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -270,7 +272,9 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
 
 void Schedule :: Matchup(){
 	
-	cout << "Matchup is working" << endl; //Debugging
+	#ifdef DEBUG //Debugging
+	cout << "Matchup operational" << endl;
+	#endif
 	
     if (Day >= TOTAL_MATCHES ) //stop after playing all games in the season
 	{
@@ -330,8 +334,10 @@ void GameManager :: Final(){
 
 void GameManager :: Run_Game(){
 	
-	cout << "Run Game is working" << endl;//Debug
-	
+	#ifdef DEBUG //Debugging
+	cout << "Run Game operational" << endl;
+	#endif
+
 	while ( season.get_Days() < TOTAL_MATCHES ) //Dont use system cls right now for debugging purposes 
 	{	
 		season.Matchup();
@@ -449,6 +455,10 @@ void ConsoleManager :: PrintTitle(){
 
 //MAIN
 int main(){
+	
+	#ifdef DEBUG
+	cout << "debugging operational" << endl;
+	#endif
 	
 	GameManager GM;
 	srand(static_cast<unsigned int>(time(0)));	//for seeding
