@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <windows.h>
 #include <string>
@@ -115,6 +116,7 @@ class Schedule{
 class GameManager {
     private:	
         Team NPC_Teams[NUMBER_OF_TEAMS];
+        Team PC_Team;
         Schedule season;
         
     public:
@@ -129,7 +131,7 @@ class GameManager {
     	void Reset_TeamStats();
     	void Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id);
     	
-    	void Run_For_All_Teams(void (Team::*func)()); //Function pointer which runs a for loop cycling through teams
+    	void Run_For_All_Teams(void (Team::*method)()); //Function pointer which runs a for loop cycling through teams
     	
     	GameManager() : season(NPC_Teams) {}
 };
@@ -301,6 +303,8 @@ void Schedule :: Matchup(){
 
 //Game Manager Methods
 void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
+	
+	(PC_Team.*method)();
 	
     for (int i = 0; i < NUMBER_OF_TEAMS; i++) 
 	{
