@@ -1,5 +1,3 @@
-
-
 #include <iostream>
 #include <windows.h>
 #include <string>
@@ -10,7 +8,7 @@
 
 using namespace std;
 
-#define DEBUG  // Comment this line to disable debug messages
+//#define DEBUG  // Comment this line to disable debug messages
 
 //Windows h (all windows h stuff will be mentioned with a (.h) comment
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -22,8 +20,8 @@ void SetColor(int color)
 string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
 string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi", " Lion-Heart" };
 
-string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum"};
-string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
+string Team_name1[] = {"Midgard", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum", "Asgard"};
+string Team_name2[] = {" Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
 const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 7; //I could use #define for this instead
 
@@ -347,7 +345,11 @@ void BattleManager::Declare_Winner(Team &winner, Team &loser){
 }
 
 void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
-	
+
+	#ifdef DEBUG
+	cout << "\nBattle_Simulation operational\n" << endl;
+	#endif
+
     team1.get_OVR(); 
     team2.get_OVR();
     
@@ -368,7 +370,7 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
 void Schedule :: Matchup(){
 	
 	#ifdef DEBUG //Debugging
-	cout << "Matchup operational" << endl;
+	cout << "\nMatchup operational\n" << endl;
 	#endif
 	
     if (Day >= TOTAL_MATCHES ) //stop after playing all games in the season
@@ -407,6 +409,10 @@ void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
 
 void GameManager :: Final(){
 	
+	#ifdef DEBUG
+	cout << "\nFinals operational\n" << endl;
+	#endif	
+	
 	cout << "Finals!" << endl;
 	
 	//Code for the final logic
@@ -432,7 +438,7 @@ void GameManager :: Final(){
 void GameManager :: Run_Game(){
 	
 	#ifdef DEBUG //Debugging
-	cout << "Run Game operational" << endl;
+	cout << "\nRun Game operational\n" << endl;
 	#endif
 
 	while ( season.get_Days() < TOTAL_MATCHES ) //Dont use system cls right now for debugging purposes 
@@ -446,6 +452,10 @@ void GameManager :: Run_Game(){
 }
 
 void GameManager :: Management_Mode(){
+	
+	#ifdef DEBUG
+	cout << "\nManagement_Mode operational\n" << endl;
+	#endif
 	
 	int input, loop = 1; 
 	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE};
@@ -488,15 +498,27 @@ void GameManager :: Management_Mode(){
 
 void GameManager :: Display_Standings(){
 	
+	#ifdef DEBUG
+	cout << "\nDisplay Standings operational\n" << endl;
+	#endif
+	
 	Run_For_All_Teams(&Team::Display_stats);
 }
 
 void GameManager :: Display_Roster(){
 	
+	#ifdef DEBUG
+	cout << "\nDisplay_Roster operational\n" << endl;
+	#endif
+	
 	Run_For_All_Teams(&Team::Display_Members);
 }
 
 void GameManager :: Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id) {
+	
+	#ifdef DEBUG
+	cout << "\nSwap_Entities operational\n" << endl;
+	#endif
 	
     if (teamA_id >= NUMBER_OF_TEAMS || teamB_id >= NUMBER_OF_TEAMS || playerA_id >= PLAYERS_PER_TEAM || playerB_id >= PLAYERS_PER_TEAM) //Error
 	{
@@ -510,10 +532,17 @@ void GameManager :: Swap_Entities(int teamA_id, int playerA_id, int teamB_id, in
     NPC_Teams[teamA_id].Members[playerA_id] = NPC_Teams[teamB_id].Members[playerB_id];
     NPC_Teams[teamB_id].Members[playerB_id] = temp;
 
+
+	SetColor(6); //Yellow
     cout << "Traded " << NPC_Teams[teamA_id].Members[playerA_id].get_Name() << " for " << NPC_Teams[teamB_id].Members[playerB_id].get_Name() << endl;
+	SetColor(7); //Reset to white
 }
 
 void GameManager :: Trade(){
+	
+	#ifdef DEBUG
+	cout << "\nTrade Operational\n" << endl;
+	#endif
 	
 	int teamA_id, playerA_id, teamB_id, playerB_id;
 	
@@ -536,7 +565,11 @@ void GameManager :: Trade(){
 
 //Console Manager Functions
 void ConsoleManager :: PrintTitle(){
-	
+
+	#ifdef DEBUG
+	cout << "\nPrintTitle operational\n" << endl;
+	#endif
+
 	SetColor(6); //Yellow
 	cout<<"::::::::::: :::::::::  :::::::::       ::::    ::::      :::     ::::    :::     :::      ::::::::  :::::::::: :::::::::"<<endl;
 	cout<<"    :+:     :+:    :+: :+:    :+:      +:+:+: :+:+:+   :+: :+:   :+:+:   :+:   :+: :+:   :+:    :+: :+:        :+:    :+:"<<endl;
@@ -554,7 +587,7 @@ void ConsoleManager :: PrintTitle(){
 int main(){
 	
 	#ifdef DEBUG
-	cout << "debugging operational" << endl;
+	cout << "\ndebugging operational\n" << endl;
 	#endif
 	
 	GameManager GM;
