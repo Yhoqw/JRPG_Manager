@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <windows.h>
 #include <string>
@@ -9,9 +8,9 @@
 
 using namespace std;
 
-#define DEBUG  // Comment this line to disable debug messages
+//#define DEBUG  // Comment this line to disable debug messages
 
-//Windows h (all windows h stuff will be mentioned with a (.h) comment
+//Windows .h 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 void SetColor(int color) 
@@ -21,102 +20,151 @@ void SetColor(int color)
 string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
 string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi", " Lion-Heart" };
 
-string Team_name1[] = {"Midgar", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum"};
-string Team_name2[] = {" Crimson Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
+string Team_name1[] = {"Midgard", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum", "Asgard"};
+string Team_name2[] = {" Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
-const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 7; //I could use #define for this instead
+const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 11; //I could use #define for this instead
 
 //create seperate functions for player actions?
 
+//Prototypes
+class Entity;
+class PLayer;
+class Team;
+class PlayerTeam;
+class BattleManager;
+class Schedule;
+class GameManager;
+class ConsoleManager;	
+
 //CLASSES
-class Entity{
+class Entity{															//Base class for all NPCs
 	protected:
 		string name;	
+		bool Is_Alive;
 		int HP = 50, ATK, SPD, DEF;
 		int Cur_HP = HP, Cur_ATK = ATK, Cur_SPD = SPD, Cur_DEF = DEF;
 		
 	public:
+		Team *Opposing_TeamPtr = nullptr;
 		
-		void Display_Stats();	
+		virtual void Display_Stats();	
 		void generate_character();
 		void Reset_Stats();
+		void Attack_Check(Entity &Target);
+			
+		//Getters
+		string get_Name()	{	return(name);	}
+		bool get_Is_Alive() {	return Is_Alive;}
+		int get_HP()		{	return(HP);		}	
+		int get_ATK()		{	return(ATK);	}		
+		int get_SPD()		{	return(SPD);	}
+		int get_DEF()		{	return(DEF);	}
 		
-		string get_Name();
-		int get_HP();
-		int get_ATK();
-		int get_SPD();
-		int get_DEF();
+		int get_Cur_HP()		{	return(Cur_HP);		}	
+		int get_Cur_ATK()		{	return(Cur_ATK);	}			
+		int get_Cur_SPD()		{	return(Cur_SPD);	}
+		int get_Cur_DEF()		{	return(Cur_DEF);	}
 		
-		void set_HP(int new_HP) {HP = new_HP;}
-		void set_ATK(int new_ATK) {ATK = new_ATK;}
-		void set_SPD(int new_SPD) {SPD = new_SPD;}
-		void set_DEF(int new_DEF) {DEF = new_DEF;}
+		//Setters
+		void set_HP(int new_HP) 	  {Cur_HP = new_HP;}
+		void set_Is_Alive(bool Alive) {Is_Alive = Alive;} 
+		void set_ATK(int new_ATK) 	  {Cur_ATK = new_ATK;}
+		void set_SPD(int new_SPD) 	  {Cur_SPD = new_SPD;}
+		void set_DEF(int new_DEF)     {Cur_DEF = new_DEF;}
 		
-		//Constructor (Ideally the reading file info will be done in the constructor)
-		Entity()
-		{	
-			generate_character();	
-			Reset_Stats();
+		virtual void Choose_Target(Team &enemy_Team); 
+		virtual void Actions();
+		
+		Entity() : ATK(0), SPD(0), DEF(0), Is_Alive(true) 
+		{ 
+			generate_character(); 
+			Reset_Stats(); 
 		}
 };
+
+class Player : public Entity {											//PC class
+    public:
+    	void Modify_Stat(int &stat, int amount, const string statName);
+    	
+    	void Choose_Target(Team &enemy_Team) override;		//Overridden methods
+    	void Actions() override;
+    	
+        Player()											//Constructor
+		{
+            generate_character();
+            Reset_Stats();
+        }
+};
  
-class Team{
-	private:
+class Team{																//Base Team class contains NPCS
+	protected:
 		string name;
 		short ID, wins = 0, losses = 0;
 		int OVR_ATK;
-		bool player_Controlled = false;
+		bool Is_Team_Alive;
 	
 	public:	
 		Entity Members[PLAYERS_PER_TEAM];
 		
 		void Display_stats();
 		void Display_Members();
-		
-		string get_Name();
+										//Getters
+		string get_Name() {	return(name);	}
 		int get_OVR();
-		int get_Wins();
-		int get_Losses();
-		
+		int get_Wins()    {	return(wins);	}
+		int get_Losses()  { return(losses);	}
+										//Setters
 		void add_Win() { wins++; };
 		void add_Loss() { losses++; };	
 		void reset_Stats();	
 		
-		Team()
+		Team()							//Constructor
 		{	
 			name = Team_name1[rand() % (sizeof(Team_name1) / sizeof(Team_name1[0]))] + Team_name2[rand() % (sizeof(Team_name2) / sizeof(Team_name2[0]))];	
 			get_OVR();
 		}
 };
 
-class BattleManager{
-	public: 
-		static void Battle_Simulation(Team &team1, Team &team2);
-		static void Declare_Winner(Team &winner, Team &loser);
+class PlayerTeam : public Team{ 										//Team Class contains PCs
+	public:
+		Player Members[PLAYERS_PER_TEAM];	
 		
+        PlayerTeam() : Team()				//Constructor
+		{
+			for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+			{
+				Members[i] = Player(); // Explicitly initialize each Player
+			}
+		}
 };
 
-class Schedule{
+class BattleManager{													//All Combat functions are contained here
+	public: 
+		static void Battle_Simulation(Team &team1, Team &team2);
+		static void PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team);
+		static void Declare_Winner(Team &winner, Team &loser);
+};
+
+class Schedule{															//Sets the Matchups based on day contained in GameManager class
 	private:
 		int Day = 0;
-		int matchups[7][2] = {	{0,0}, {1, 0} ,{2, 3}, {0, 2}, {1, 3}, {0, 3}, {1, 2}  };
+		int matchups[TOTAL_MATCHES][2] = {	{0,0}, {4, 3}, {1, 0} ,{2, 3}, {4, 0}, {0, 2}, {1, 3}, {4, 1}, {0, 3}, {1, 2}, {4, 2}};
 		Team* teams;
+		PlayerTeam* playerTeam;
 	
 	public:
 		void reset() {Day = 0;}	// Reset for a new season
 		void Matchup();
-		int get_Days();
+		int get_Days() {   return Day;	}	
 		
-		Schedule(Team* teamsPtr) : teams(teamsPtr) 
-		{
-			Day = 0;
-		}
-};
+    Schedule(Team* teamsPtr, PlayerTeam* playerPtr) : teams(teamsPtr), playerTeam(playerPtr) {	Day = 0;	}
+};	
 
-class GameManager {
+class GameManager {														//Essentially the Main Game class
     private:	
         Team NPC_Teams[NUMBER_OF_TEAMS];
-        Team PC_Team;
+        PlayerTeam PC_Team;
         Schedule season;
         
     public:
@@ -127,23 +175,20 @@ class GameManager {
     	void Display_Roster();
     	void Final();
     	void Trade();
-    	
     	void Reset_TeamStats();
-    	void Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id);
+    	
+		void Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id);
     	
     	void Run_For_All_Teams(void (Team::*method)()); //Function pointer which runs a for loop cycling through teams
     	
-    	GameManager() : season(NPC_Teams) {}
+    	GameManager() : season(NPC_Teams, &PC_Team) {}
 };
 
-class ConsoleManager {
+class ConsoleManager {													//Handles UI and Static Methods
     public:
         static void PrintTitle();
 };
-
-
-//METHODS
-
+		
 //Entity Methods
 void Entity :: Display_Stats(){
 	
@@ -154,7 +199,7 @@ void Entity :: Display_Stats(){
 
 void Entity :: generate_character(){
 
-	//Generates a random name 		
+	//Generates a random name 	
 	name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
 	
 	ATK = (rand() % 20) + 1;
@@ -162,40 +207,190 @@ void Entity :: generate_character(){
 	DEF = (rand() % 10);
 	
 };
-
-void Entity :: Reset_Stats(){
+									
+void Entity :: Reset_Stats(){		
 	
 	Cur_HP = HP;
 	Cur_ATK = ATK;
 	Cur_SPD = SPD;
 	Cur_DEF = DEF;
+	Is_Alive = true; 
 }
 
-string Entity :: get_Name(){
-	return(name);
+void Entity :: Attack_Check(Entity &Target){
+	
+	//Check whether the hit lands (based on SPD)
+    int Hit_chance = rand() % 100;
+    int Hit_threshold = 100 - Target.get_SPD(); 
+    
+    SetColor(12); //Red for attack messages  
+    cout << name << " Attacks " << Target.get_Name() << endl; 
+	Sleep(200); //Reduced delay for impact
+    
+    //Damage calculation
+    if (Hit_chance < Hit_threshold)
+	{
+		int damage = Cur_ATK - Target.get_Cur_DEF(); //int damage = max(0, ATK - target.DEF); is a proposed solution that could outright circumvent the negatives issue
+	
+		damage = std::max(0, damage); //in case damage gives a negative number
+		Target.set_HP(Target.get_Cur_HP() - damage);
+			
+        Target.set_HP( (Target.get_Cur_HP() < 0) ? 0 : Target.get_Cur_HP() ); //Ensure HP does not go below 0
+        
+		cout << name << "'s attack hits! Damage dealt: " << damage << "\n" << endl;
+	}
+	
+	else
+	{	
+		SetColor(14); //Yellow for misses
+		cout << "The attack missed!" << endl;	
+	}
+	
+	SetColor(7); //Reset color
+	Sleep(200); //Reduced delay
 }
 
-int Entity :: get_HP(){
-	return(HP);
-};
+void Entity :: Choose_Target(Team &enemy_Team){
+	
+	int target = rand() % PLAYERS_PER_TEAM;
+	
+   	if (target >= 0 && target <= PLAYERS_PER_TEAM) 
+	{
+        Attack_Check(enemy_Team.Members[target - 1]);
+    } 
+	
+	else 
+	{
+    	cout << "Invalid target! Turn wasted.\n";
+	}
+}
+												
+void Entity :: Actions(){
 
-int Entity :: get_ATK(){
-	return(ATK);
-};
+	if (Cur_HP <= 0)
+	{
+		return;
+	}		
+	
+	else
+	{	
+		Display_Stats();
 
-int Entity :: get_SPD(){
-	return(SPD);
-};
+    	if (Opposing_TeamPtr) 
+		{
+    	    Choose_Target(*Opposing_TeamPtr);
+    	} 
+			
+		else 
+		{
+    	    cout << "No opposing team assigned! Turn wasted.\n";
+    	}
+	}
+}
 
-int Entity :: get_DEF(){
-	return(DEF);
-};
+//Player Methods
+void Player :: Modify_Stat(int &stat, int amount, const string statName) {
+	
+    stat += amount;
+    SetColor(10);
+    cout << statName << " UP +" << amount << "\n" << endl;
+    SetColor(7);
+}
+
+void Player :: Choose_Target(Team &enemy_Team){									//Called in Actions() it selects the target and attck_checks()
+	
+	#ifdef DEBUG
+	cout << "\nPlayer::Attack operational\n" << endl;
+	#endif	
+	
+    int target;
+    cout << "Select a target:\n";
+    
+	enemy_Team.Display_Members();
+    	
+	cin >> target;
+       
+    if (target >= 1 && target <= 3) 
+	{
+        Attack_Check(enemy_Team.Members[target - 1]);
+    } 
+	
+	else 
+	{
+    	cout << "Invalid target! Turn wasted.\n";
+	}
+}
+
+void Player :: Actions(){														//Calls all the available actions for the Entity
+	
+	#ifdef DEBUG
+	cout << "\Player::Actions() operational\n" << endl;
+	#endif	
+	
+	if (Cur_HP <= 0)
+	{
+		return;
+	}	
+	
+	Display_Stats();
+	int input;
+	
+	//Define availaible actions
+	enum Actions
+	{	Attack = 1, SPD_UP, DEF_UP, ATK_UP, Heal	};	
+	
+	cout << "1.Attack \n2.SPD UP \n3.DEF UP \n4.ATK UP \n5.Heal" << endl;
+	cin >> input;	
+
+	switch (input)
+	{
+		case Attack:
+		{	
+            #ifdef DEBUG
+            cout << "Debug: Attack selected.\n";
+            #endif
+            if (Opposing_TeamPtr) 
+			{
+                Choose_Target(*Opposing_TeamPtr);
+            } 
+			
+			else 
+			{
+                cout << "No opposing team assigned! Turn wasted.\n";
+            }
+			break;
+		}
+				
+        case SPD_UP:
+            Modify_Stat(Cur_SPD, 5, "SPD");
+            break;
+
+        case DEF_UP:
+            Modify_Stat(Cur_DEF, 5, "DEF");
+            break;
+
+        case ATK_UP:
+            Modify_Stat(Cur_ATK, 5, "ATK");
+            break;
+
+        case Heal:
+            Modify_Stat(Cur_HP, 30, "HP");
+            break;
+
+		
+        default:
+		{
+			SetColor(14);
+            cout << "Invalid choice! Turn Wasted.\n" << endl;
+            break;
+		}
+	}
+		
+		SetColor(7); 
+    	Sleep(500); 
+}
 
 //Team Methods
-string Team :: get_Name(){
-	return(name);
-}
-
 int Team :: get_OVR(){
 	
 	OVR_ATK = 0; // Reset before summing
@@ -206,17 +401,9 @@ int Team :: get_OVR(){
 	return (OVR_ATK /= PLAYERS_PER_TEAM);
 }
 
-int Team :: get_Wins(){
-	return(wins);
-}
-
-int Team :: get_Losses(){
-	return(losses);
-}
-
 void Team :: Display_stats(){
 
-	SetColor(3); //Blue
+	SetColor(3); //Cyan
 	cout << "Team: " << name << " wins: " << wins << " losses: " << losses << endl;
 	SetColor(7); //White
 	cout << endl;
@@ -243,7 +430,7 @@ void Team :: reset_Stats(){
 }
 
 //Battle Manager Functions
-void BattleManager::Declare_Winner(Team &winner, Team &loser){
+void BattleManager::Declare_Winner(Team &winner, Team &loser){					//Print Winning Team message
 	
 	SetColor(10); // Green 
     cout << "\n" << winner.get_Name() << " win!\n" << endl;
@@ -253,8 +440,58 @@ void BattleManager::Declare_Winner(Team &winner, Team &loser){
     loser.add_Loss();
 }
 
-void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
+void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Player Controlled Team Battles
 	
+	#ifdef DEBUG 
+	cout << "\nPC Battle Operational\n" << endl;
+	#endif
+	
+    for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+	{
+        PC_Team.Members[i].Opposing_TeamPtr = &Opposing_Team; // Correctly assign pointer
+        Opposing_Team.Members[i].Opposing_TeamPtr = &PC_Team;
+    }
+
+	cout << "\n--- BATTLE BEGINS! ---\n";
+    Sleep(1000);
+	
+	while ( (Opposing_Team.Members[0].get_Cur_HP() > 0 ||Opposing_Team.Members[1].get_Cur_HP() > 0 || Opposing_Team.Members[2].get_Cur_HP() > 0) 
+			&& (PC_Team.Members[0].get_Cur_HP() > 0 || PC_Team.Members[1].get_Cur_HP() > 0 || PC_Team.Members[2].get_Cur_HP() > 0) )
+	{
+		//Players Turn 
+		for (int i = 0; i < PLAYERS_PER_TEAM; i++)	
+		{
+			PC_Team.Members[i].Actions();
+		}
+	
+		//Enemy Turn
+		for (int i = 0; i < PLAYERS_PER_TEAM; i++)
+		{
+			Opposing_Team.Members[i].Actions();
+		}
+	}
+	
+	//Win Loss states
+	if (Opposing_Team.Members[0].get_Cur_HP() <= 0 && Opposing_Team.Members[1].get_Cur_HP() <= 0 && Opposing_Team.Members[2].get_Cur_HP() <= 0)  //Win
+	{
+		Declare_Winner(PC_Team, Opposing_Team);	
+	}
+
+	else if (PC_Team.Members[0].get_Cur_HP() <= 0 && PC_Team.Members[1].get_Cur_HP() <= 0 && PC_Team.Members[2].get_Cur_HP() <= 0) //lose
+	{	
+		Declare_Winner(Opposing_Team, PC_Team);	
+	}
+	
+	SetColor(7);
+	
+}
+
+void BattleManager::Battle_Simulation(Team &team1, Team &team2) {				//Battle Simulations
+
+	#ifdef DEBUG
+	cout << "\nBattle_Simulation operational\n" << endl;
+	#endif
+
     team1.get_OVR(); 
     team2.get_OVR();
     
@@ -267,15 +504,11 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {
 	{	Declare_Winner(team2, team1);	}
 }
 
-//Schedule Methods
- int Schedule :: get_Days(){
-	return Day;
-}
-
-void Schedule :: Matchup(){
+//Schedule Methods	
+void Schedule :: Matchup(){												//Cycles through matchups to begin matches
 	
-	#ifdef DEBUG //Debugging
-	cout << "Matchup operational" << endl;
+	#ifdef DEBUG 
+	cout << "\nMatchup operational\n" << endl;
 	#endif
 	
     if (Day >= TOTAL_MATCHES ) //stop after playing all games in the season
@@ -284,7 +517,7 @@ void Schedule :: Matchup(){
         return;
     }
     
-    if (Day == 0)
+    else if (Day == 0) 		//Before the season begins
     {
     	Day++;
     	return;
@@ -293,8 +526,37 @@ void Schedule :: Matchup(){
     int teamA = matchups[Day][0];
     int teamB = matchups[Day][1];
 
-    cout << "\nDay " << (Day) << ": " << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << "\n" << endl;
-    Sleep(1000); 
+    cout << "\nDay " << (Day) << ": "; 
+    
+    if (teamA == 4) 					// If teamA is the PlayerTeam
+	{  
+		#ifdef DEBUG 
+		cout << "\nLOG: Team A is a player\n" << endl;
+		#endif
+	
+        cout << playerTeam->get_Name() << " vs " << teams[teamB].get_Name() << "\n";
+        BattleManager::PC_Battle(*playerTeam, teams[teamB]);
+    } 
+    else if (teamB == 4) 				// If teamB is the PlayerTeam
+	{ 
+		#ifdef DEBUG 
+		cout << "\nLOG: Team B is a player\n" << endl;
+		#endif
+	
+        cout << teams[teamA].get_Name() << " vs " << playerTeam->get_Name() << "\n";
+        BattleManager::PC_Battle(*playerTeam, teams[teamA]);
+    } 
+    else 
+	{									//Games with all NPC teams
+		#ifdef DEBUG 
+		cout << "\nSimuated Matchup operational\n" << endl;
+		#endif
+		
+        cout << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << "\n";
+        BattleManager::Battle_Simulation(teams[teamA], teams[teamB]);
+    }
+
+
 
 	BattleManager::Battle_Simulation(teams[teamA], teams[teamB]);
 	
@@ -304,7 +566,7 @@ void Schedule :: Matchup(){
 //Game Manager Methods
 void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
 	
-	(PC_Team.*method)();
+	(PC_Team.*method)(); //Call the function for the player controlled team
 	
     for (int i = 0; i < NUMBER_OF_TEAMS; i++) 
 	{
@@ -313,6 +575,10 @@ void GameManager :: Run_For_All_Teams(void (Team::*method)()) {
 }
 
 void GameManager :: Final(){
+	
+	#ifdef DEBUG
+	cout << "\nFinals operational\n" << endl;
+	#endif	
 	
 	cout << "Finals!" << endl;
 	
@@ -336,13 +602,13 @@ void GameManager :: Final(){
 	
 }
 
-void GameManager :: Run_Game(){
+void GameManager :: Run_Game(){											//Check numbers of days remaining in the season then cycle through basic game loop until final
 	
 	#ifdef DEBUG //Debugging
-	cout << "Run Game operational" << endl;
+	cout << "\nRun Game operational\n" << endl;
 	#endif
 
-	while ( season.get_Days() < TOTAL_MATCHES ) //Dont use system cls right now for debugging purposes 
+	while ( season.get_Days() < TOTAL_MATCHES )
 	{	
 		season.Matchup();
 		Management_Mode();
@@ -352,7 +618,11 @@ void GameManager :: Run_Game(){
 	Final();
 }
 
-void GameManager :: Management_Mode(){
+void GameManager :: Management_Mode(){									//Options in between matches and match simulations
+	
+	#ifdef DEBUG
+	cout << "\nManagement_Mode operational\n" << endl;
+	#endif
 	
 	int input, loop = 1; 
 	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE};
@@ -395,15 +665,27 @@ void GameManager :: Management_Mode(){
 
 void GameManager :: Display_Standings(){
 	
+	#ifdef DEBUG
+	cout << "\nDisplay Standings operational\n" << endl;
+	#endif
+	
 	Run_For_All_Teams(&Team::Display_stats);
 }
 
 void GameManager :: Display_Roster(){
 	
+	#ifdef DEBUG
+	cout << "\nDisplay_Roster operational\n" << endl;
+	#endif
+	
 	Run_For_All_Teams(&Team::Display_Members);
 }
 
-void GameManager :: Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id) {
+void GameManager :: Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id) {	
+	
+	#ifdef DEBUG
+	cout << "\nSwap_Entities operational\n" << endl;
+	#endif
 	
     if (teamA_id >= NUMBER_OF_TEAMS || teamB_id >= NUMBER_OF_TEAMS || playerA_id >= PLAYERS_PER_TEAM || playerB_id >= PLAYERS_PER_TEAM) //Error
 	{
@@ -417,10 +699,17 @@ void GameManager :: Swap_Entities(int teamA_id, int playerA_id, int teamB_id, in
     NPC_Teams[teamA_id].Members[playerA_id] = NPC_Teams[teamB_id].Members[playerB_id];
     NPC_Teams[teamB_id].Members[playerB_id] = temp;
 
+
+	SetColor(6); //Yellow
     cout << "Traded " << NPC_Teams[teamA_id].Members[playerA_id].get_Name() << " for " << NPC_Teams[teamB_id].Members[playerB_id].get_Name() << endl;
+	SetColor(7); //Reset to white
 }
 
-void GameManager :: Trade(){
+void GameManager :: Trade(){											//Chooses the parameters for swaping entities (Accessed from Management Mode) 
+	
+	#ifdef DEBUG
+	cout << "\nTrade Operational\n" << endl;
+	#endif
 	
 	int teamA_id, playerA_id, teamB_id, playerB_id;
 	
@@ -443,7 +732,11 @@ void GameManager :: Trade(){
 
 //Console Manager Functions
 void ConsoleManager :: PrintTitle(){
-	
+
+	#ifdef DEBUG
+	cout << "\nPrintTitle operational\n" << endl;
+	#endif
+
 	SetColor(6); //Yellow
 	cout<<"::::::::::: :::::::::  :::::::::       ::::    ::::      :::     ::::    :::     :::      ::::::::  :::::::::: :::::::::"<<endl;
 	cout<<"    :+:     :+:    :+: :+:    :+:      +:+:+: :+:+:+   :+: :+:   :+:+:   :+:   :+: :+:   :+:    :+: :+:        :+:    :+:"<<endl;
@@ -461,7 +754,7 @@ void ConsoleManager :: PrintTitle(){
 int main(){
 	
 	#ifdef DEBUG
-	cout << "debugging operational" << endl;
+	cout << "\ndebugging operational\n" << endl;
 	#endif
 	
 	GameManager GM;
@@ -474,4 +767,3 @@ int main(){
 	
 	return(0);	
 };
-
