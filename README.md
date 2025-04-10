@@ -6,10 +6,6 @@ Yazdan Ali Khan 2024665, Muhammed Hammad Shahid 2024389 [FEE Section E]
 
 Overview
 This project blends the turn based combat of a text based Japanese Role-Playing Game (JRPG) with the strategy and structure of a sports league manager. Built in C++, the simulator showcases core object-oriented programming (OOP) concepts—encapsulation, inheritance, polymorphism, and abstraction. It sets up a competitive environment where AI- and player-controlled teams, made up of unique characters with varying randomly-generated stats, face off in turn-based battles until every team plays each other once after which the top 2 teams face in a final game that decides the winner.
-Below are some images of reference projects that we took inspiration from
-
-:-Please dont pay attention to the fancy graphics or images in this picture and instead try to consider how the information is arranged and what kind of information is considered useful by sports sims such as these
-
 
 Objectives
 Recreate turn-based RPG combat using OOP design.
@@ -68,9 +64,6 @@ Libraries Used: <iostream>, <vector>, <cstdlib>, <ctime>, <windows.h>, <string>
 
 
 Platform: Windows (due to use of windows.h and SetConsoleTextAttribute for UI coloring)
-
-Flowchart and Diagrams
-
 
 Conclusion
 This project successfully demonstrates how object-oriented programming can be used to model complex, interactive systems like a game simulation. It showcases an integration of core OOP concepts in a creative and engaging way, making it not only functional but also a solid demonstration of real-world application of C++.
