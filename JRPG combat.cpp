@@ -70,12 +70,14 @@ void Entity::Attack_Check(Entity &Target){
         Target.set_HP( (Target.get_Cur_HP() < 0) ? 0 : Target.get_Cur_HP() ); //Ensure HP does not go below 0
         
 		cout << name << "'s attack hits! Damage dealt: " << damage << "\n" << endl;
+		PlaySoundEffect("attack");
 	}
 	
 	else
 	{	
 		SetColor(14); //Yellow for misses
 		cout << "The attack missed!" << endl;	
+		PlaySoundEffect("miss");
 	}
 	
 	SetColor(7); //White
@@ -134,14 +136,15 @@ void Player::Actions(){														//Calls all the available actions for the E
 	enum Actions
 	{	Attack = 1, SPD_UP, DEF_UP, ATK_UP, Heal	};	
 	
-	cout << "1.Attack \n2.SPD UP \n3.DEF UP \n4.ATK UP \n5.Heal" << endl;
+	ConsoleManager::PrintMenu();
+
 	cin >> input;	
 
 	switch (input)
 	{
-		case Attack:
+		case Attack:		
 		{	
-            if (Opposing_TeamPtr) 
+            if (Opposing_TeamPtr)				 
 			{
                 Team* enemy_team = static_cast<Team*>(Opposing_TeamPtr);
                 Choose_Target(*enemy_team);
@@ -183,17 +186,21 @@ void Player::Actions(){														//Calls all the available actions for the E
     	Sleep(500); 
 }
 
-void Player::Choose_Target(Team &enemy_Team){									//Called in Actions() it selects the target and calls Attck_check()
+void Player::Choose_Target(Team &enemy_Team){								//Called in Actions() it selects the target and calls Attck_check()
 	
 	#ifdef DEBUG
-	cout << "\nPlayer::Attack operational\n" << endl;
+	cout << "\nPlayer::Choose_target Operational\n" << endl;
 	#endif	
 	
     int target;
     cout << "Select a target:\n";
     
+	#ifdef DEBUG
+	cout << "\nPlayer::Choose_Target displaying members\n" << endl;
+	#endif
+
 	enemy_Team.Display_Members();
-    	
+
 	cin >> target;
        
     if (target >= 1 && target <= PLAYERS_PER_TEAM	) 
@@ -212,6 +219,7 @@ void Player::Modify_Stat(int &stat, int amount, const string statName) {
     stat += amount;
     SetColor(10);
     cout << statName << " UP +" << amount << "\n" << endl;
+	PlaySoundEffect("buff");
     SetColor(7);
 }
 
@@ -231,7 +239,7 @@ void Team::Display_Members(){
 	SetColor(7); //White
 	
 	Run_For_All_Members(&Entity::Display_Stats);
-    
+
     cout << endl;
 };
 
@@ -281,6 +289,8 @@ void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Play
 	cout << "\nPC Battle Operational\n" << endl;
 	#endif
 	
+	ConsoleManager::ClearScreen();
+
     for (int i = 0; i < PLAYERS_PER_TEAM; i++) // Correctly assigns pointers and Resets stats
 	{
 		PC_Team.Members[i].Reset_Stats();
@@ -317,12 +327,7 @@ void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Play
 		}
 		
         // Show the current state after each round
-        cout << "\n--- Current Battle Status ---" << endl;
-        cout << "Your team:" << endl;
-        PC_Team.Display_Members();
-        
-        cout << "Opposing team:" << endl;
-        Opposing_Team.Display_Members();		
+        Display_Round_Summary(PC_Team, Opposing_Team);
 	}
 	
 	//Win Loss states
@@ -366,6 +371,17 @@ void BattleManager::Declare_Winner(Team &winner, Team &loser){					//Print Winni
 
     winner.add_Win();
     loser.add_Loss();
+}
+
+void BattleManager::Display_Round_Summary(PlayerTeam &PC_Team, Team &Opposing_Team) {
+    
+    cout << "\n--- Current Battle Status ---" << endl;
+    cout << "Your team:" << endl;
+	PC_Team.Display_Members();
+    
+	cout << "Opposing team:" << endl;
+    Opposing_Team.Display_Members();
+    Sleep(2000); 
 }
 
 //Schedule Methods 
@@ -459,6 +475,8 @@ void GameManager::Trade(){											//Chooses the parameters for swaping entiti
 	cout << "\nTrade Operational\n" << endl;
 	#endif
 	
+	ConsoleManager::ClearScreen();
+
 	int teamA_id, playerA_id, teamB_id, playerB_id;
 	
 	cout << "Choose the team you wnat to trade a player from " << endl;
@@ -478,6 +496,21 @@ void GameManager::Trade(){											//Chooses the parameters for swaping entiti
 	Swap_Entities(teamA_id-1, playerA_id-1, teamB_id-1, playerB_id-1);
 }
 
+void GameManager::Display_Standings(){
+
+	#ifdef DEBUG
+	cout << "\nDisplay Standings operational\n" << endl;
+	#endif	
+	
+	ConsoleManager::ClearScreen();
+	
+	cout << "Standings (Wins/Losses): " << endl;
+	cout << "==================================" << endl;
+	
+	Run_For_All_Teams(&Team::Display_stats);
+	PC_Team.Display_stats();
+}
+
 void GameManager::Run_Game(){											//Check numbers of days remaining in the season then cycle through basic game loop until final
 	
 	while ( season.get_Days() < TOTAL_MATCHES )
@@ -491,12 +524,12 @@ void GameManager::Run_Game(){											//Check numbers of days remaining in the
 }
 
 void GameManager::Management_Mode(){									//Options in between matches and match simulations
-		
+	
 	int input, loop = 1; 
 	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE};
 		
 	do{
-		cout << "\nPress 1.To Simulate to next day 2.To Show Standings 3.To Show Rosters 4.To Trade\n" << endl;
+		ConsoleManager::PrintManagementMenu();
 		cin >> input;
 		
 		switch(input)
@@ -508,13 +541,14 @@ void GameManager::Management_Mode(){									//Options in between matches and ma
 			}
 			
 			case STANDINGS:
-			{
+			{	
 				Display_Standings();
 				break;
 			}
 				
 			case ROSTERS:
-			{
+			{	
+				ConsoleManager::ClearScreen();
 				Display_Roster();
 				break;
 			}
@@ -572,6 +606,36 @@ void ConsoleManager::PrintTitle(){
 	cout<<" #####      ###    ### ###             ###       ### ###     ### ###    #### ###     ###  ########  ########## ###    ### "<<endl;
 	SetColor(7); //Reset to white
 	cout<<"__________________________________________________________________________________________________________________________"<<endl;		
+	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams they will play each in simulations of JRPG style \ncombat by the end of the season, 2 teams will play a final to pick a winner" << endl;
+}
+
+void ConsoleManager::PrintMenu() {
+    cout << "=========================" << endl;
+    cout << "       Action MENU       " << endl;
+    cout << "=========================" << endl;
+    cout << "1. Attack" << endl;
+    cout << "2. SPD UP" << endl;
+    cout << "3. DEF UP" << endl;
+    cout << "4. ATK UP" << endl;
+    cout << "5. Heal" << endl;
+    cout << "=========================" << endl;
+}
+
+void ConsoleManager::ClearScreen() 
+{
+    system("cls");
+}
+
+void ConsoleManager::PrintManagementMenu(){
+    cout << "====================================" << endl;
+    cout << "       	Management MENU       " << endl;
+    cout << "====================================" << endl;
+	cout << "1. Simulate to next Day" << endl;
+    cout << "2. Show Standings (Wins/Losses)" << endl;
+    cout << "3. Show Rosters" << endl;
+    cout << "4. Make Trades" << endl;
+    cout << "====================================" << endl;
+	
 }
 
 //MAIN
@@ -585,7 +649,6 @@ int main(){
 	srand(static_cast<unsigned int>(time(0)));	//for seeding
 		
 	ConsoleManager::PrintTitle(); 
-	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams they will play each in simulations of JRPG style \ncombat by the end of the season, 2 teams will play a final to pick a winner" << endl;
 	
 	GM.Run_Game();
 	

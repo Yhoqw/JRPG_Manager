@@ -7,14 +7,22 @@
 #include <fstream>
 
 using namespace std;
+//Project By Yazdan Ali Khan (2024665), Hammad Shahid (2024389)
 
-//#define DEBUG  // Comment this line to disable debug messages
+#define DEBUG  // Comment this line to disable debug messages
 
 //Windows .h 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 void SetColor(int color) 
 {	SetConsoleTextAttribute(hConsole, color);	}
+
+void PlaySoundEffect(const string &effect) 
+{
+    if (effect == "attack") Beep(800, 400); // Parameters take frequency and duration
+    else if (effect == "miss") Beep(300, 200);
+    else if (effect == "buff") Beep(700, 200);
+}
 
 //Variables Arrays and constants (Dont mind the names these are taken from a list of popular JRPGs)
 string first_names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
@@ -23,7 +31,7 @@ string last_names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Cres
 string Team_name1[] = {"Midgard", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum", "Asgard"};
 string Team_name2[] = {" Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
-const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 11; //I could use #define for this instead
+const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 11; //I could use #define for this instead lol
 
 //Prototypes
 class Entity;
@@ -40,7 +48,7 @@ class Entity{															//Base class for all NPCs
 	protected:
 		string name;	
 		bool Is_Alive;
-		int HP = 50, ATK, SPD, DEF;
+		int HP = 20, ATK, SPD, DEF;
 		int Cur_HP = HP, Cur_ATK = ATK, Cur_SPD = SPD, Cur_DEF = DEF;
 		
 	public:
@@ -71,7 +79,7 @@ class Entity{															//Base class for all NPCs
 		void set_SPD(int new_SPD) 	  {Cur_SPD = new_SPD;}
 		void set_DEF(int new_DEF)     {Cur_DEF = new_DEF;}
 		
-		virtual void Choose_Target(Team &enemy_Team);       //Overloaded Choose Target because it kept messing up the function pointer
+		virtual void Choose_Target(Team &enemy_Team);       //Overloaded Choose Target because it kept messing up
 		virtual void Choose_Target(PlayerTeam &enemy_Team); 
 		virtual void Actions();
 		
@@ -97,7 +105,7 @@ class Player : public Entity {
         }
 };
  
-class Team{																//Base Team class contains NPCS
+class Team{																//Base Team class contains NPCS(Entities)
 	protected:
 		string name;
 		short ID, wins = 0, losses = 0;
@@ -148,6 +156,7 @@ class BattleManager{													//All Combat functions are contained here
 		static void Battle_Simulation(Team &team1, Team &team2);
 		static void PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team); 
 		static void Declare_Winner(Team &winner, Team &loser);
+		static void Display_Round_Summary(PlayerTeam &PC_Team, Team &Opposing_Team); 
 };
 
 class Schedule{															//Sets the Matchups based on day contained in GameManager class
@@ -173,7 +182,7 @@ class GameManager {														//Essentially the Main Game class
 
     public:
     	void Run_For_All_Teams(void (Team::*method)()); 
-    	void Display_Standings() {Run_For_All_Teams(&Team::Display_stats); PC_Team.Display_stats(); };
+    	void Display_Standings();
     	void Display_Roster()  	 {Run_For_All_Teams(&Team::Display_Members); PC_Team.Display_Members();}; 
     	
     	void Run_Game();
@@ -189,4 +198,7 @@ class GameManager {														//Essentially the Main Game class
 class ConsoleManager {													//Handles UI and Static Methods
     public:
         static void PrintTitle();
+		static void PrintMenu();
+		static void ClearScreen();
+		static void PrintManagementMenu();
 };
