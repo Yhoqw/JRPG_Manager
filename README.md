@@ -43,16 +43,8 @@ setters.
 ● Abstraction: Complex operations like resolving combat or generating stats are
 tucked into manager classes, keeping them separate from other systems.
 
-Tools:
-Language: C++
-Libraries Used: <iostream>, <cstdlib>, <ctime>, <windows.h>,
-<string>
-Platform: Windows (due to use of windows.h and SetConsoleTextAttribute for
-UI coloring)
-
 Conclusion
 This project successfully demonstrates how object-oriented programming can be used to
 model complex, interactive systems like a game simulation. It showcases an integration of
 core OOP concepts in a creative and engaging way, making it not only functional but also a
 solid demonstration of real-world application of C++.
-6
