@@ -9,7 +9,7 @@
 using namespace std;
 //Project By Yazdan Ali Khan (2024665), Hammad Shahid (2024389)
 
-#define DEBUG  // Comment this line to disable debug messages
+//#define DEBUG  // Comment this line to disable debug messages
 
 //Windows .h 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -168,7 +168,9 @@ class Schedule{															//Sets the Matchups based on day contained in Game
 	
 	public:
 		void reset() {Day = 0;}	// Reset for a new season
-		void Matchup(); 
+		void Matchup();
+		void Print_Schedule();
+
 		int get_Days() {   return Day;	}	
 		
     Schedule(Team* teamsPtr, PlayerTeam* playerPtr) : teams(teamsPtr), playerTeam(playerPtr) {	Day = 0;	}

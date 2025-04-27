@@ -379,7 +379,7 @@ void BattleManager::Display_Round_Summary(PlayerTeam &PC_Team, Team &Opposing_Te
     cout << "Your team:" << endl;
 	PC_Team.Display_Members();
     
-	cout << "Opposing team:" << endl;
+	cout << "\n Opposing team:" << endl;
     Opposing_Team.Display_Members();
     Sleep(2000); 
 }
@@ -410,33 +410,36 @@ void Schedule::Matchup(){												//Cycles through matchups to begin matches
     
     if (teamA == 4) 					// If teamA is the PlayerTeam
 	{  
-		#ifdef DEBUG 
-		cout << "\nLOG: Team A is a player\n" << endl;
-		#endif
-	
         cout << playerTeam->get_Name() << " vs " << teams[teamB].get_Name() << "\n";
         BattleManager::PC_Battle(*playerTeam, teams[teamB]);
     } 
     else if (teamB == 4) 				// If teamB is the PlayerTeam
-	{ 
-		#ifdef DEBUG 
-		cout << "\nLOG: Team B is a player\n" << endl;
-		#endif
-	
+	{ 	
         cout << teams[teamA].get_Name() << " vs " << playerTeam->get_Name() << "\n";
         BattleManager::PC_Battle(*playerTeam, teams[teamA]);
     } 
     else 
-	{									//Games with all NPC teams
-		#ifdef DEBUG 
-		cout << "\nSimuated Matchup operational\n" << endl;
-		#endif
-		
+	{									//Games with all NPC teams		
         cout << teams[teamA].get_Name() << " vs " << teams[teamB].get_Name() << "\n";
         BattleManager::Battle_Simulation(teams[teamA], teams[teamB]);
     }
 	
     Day++;	
+}
+
+void Schedule::Print_Schedule(){
+	cout << "The Schedule is:\n " << endl;
+
+	SetColor(5); //Pruple
+
+	for (int i = 1; i < TOTAL_MATCHES; i++)
+	{
+		cout << "Day " << (i + 1) << ": " << teams[matchups[i][0]].get_Name() << " vs " << teams[matchups[i][1]].get_Name() << endl;
+	}
+
+	SetColor(7);
+
+	cout << endl;
 }
 
 //Game Manager Methods
@@ -526,7 +529,7 @@ void GameManager::Run_Game(){											//Check numbers of days remaining in the
 void GameManager::Management_Mode(){									//Options in between matches and match simulations
 	
 	int input, loop = 1; 
-	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE};
+	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE, SCHEDULE};
 		
 	do{
 		ConsoleManager::PrintManagementMenu();
@@ -556,6 +559,12 @@ void GameManager::Management_Mode(){									//Options in between matches and ma
 			case TRADE:
 			{
 				Trade();
+				break;
+			}
+
+			case SCHEDULE:
+			{	
+				season.Print_Schedule();
 				break;
 			}
 			
@@ -606,7 +615,7 @@ void ConsoleManager::PrintTitle(){
 	cout<<" #####      ###    ### ###             ###       ### ###     ### ###    #### ###     ###  ########  ########## ###    ### "<<endl;
 	SetColor(7); //Reset to white
 	cout<<"__________________________________________________________________________________________________________________________"<<endl;		
-	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams they will play each in simulations of JRPG style \ncombat by the end of the season, 2 teams will play a final to pick a winner" << endl;
+	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams and 1 player team they will play each other in simulations of JRPG style \ncombat (3 vs 3 combat where one team makes all its moves in one turn then the CPU makes its moves) by the end of the season, 2 teams will play a final to pick a winner. " << endl;
 }
 
 void ConsoleManager::PrintMenu() {
@@ -634,6 +643,7 @@ void ConsoleManager::PrintManagementMenu(){
     cout << "2. Show Standings (Wins/Losses)" << endl;
     cout << "3. Show Rosters" << endl;
     cout << "4. Make Trades" << endl;
+	cout << "5. Show Schedule" << endl;
     cout << "====================================" << endl;
 	
 }
