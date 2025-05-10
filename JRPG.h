@@ -2,9 +2,7 @@
 #include <windows.h>
 #include <string>
 #include <cstdlib>
-#include <vector>
 #include <ctime>
-#include <fstream>
 
 using namespace std;
 //Project By Yazdan Ali Khan (2024665), Hammad Shahid (2024389)
@@ -44,11 +42,13 @@ class GameManager;
 class ConsoleManager;	
 
 //CLASSES
+
+	//Entitys
 class Entity{															//Base class for all NPCs
 	protected:
 		string name;	
 		bool Is_Alive;
-		int HP = 20, ATK, SPD, DEF;
+		int HP, ATK, SPD, DEF;
 		int Cur_HP = HP, Cur_ATK = ATK, Cur_SPD = SPD, Cur_DEF = DEF;
 		
 	public:
@@ -60,12 +60,14 @@ class Entity{															//Base class for all NPCs
 		void Attack_Check(Entity &Target);
 			
 		//Getters
-		string get_Name()	{	return(name);	}
-		bool get_Is_Alive() {	return Is_Alive;}
+		bool get_Is_Alive() const; 
+		
+		string get_Name()	{	return(name);	}			//Maybe I should have a wrapper class for getters and setters?
 		int get_HP()		{	return(HP);		}	
 		int get_ATK()		{	return(ATK);	}		
 		int get_SPD()		{	return(SPD);	}
 		int get_DEF()		{	return(DEF);	}
+
 		
 		int get_Cur_HP()		{	return(Cur_HP);		}	
 		int get_Cur_ATK()		{	return(Cur_ATK);	}			
@@ -73,12 +75,12 @@ class Entity{															//Base class for all NPCs
 		int get_Cur_DEF()		{	return(Cur_DEF);	}
 		
 		//Setters
-		void set_HP(int new_HP) 	  {Cur_HP = new_HP;}
-		void set_Is_Alive(bool Alive) {Is_Alive = Alive;} 
+		void set_HP(int new_HP);
+		//void set_Is_Alive(bool Alive) {Is_Alive = Alive;} 
 		void set_ATK(int new_ATK) 	  {Cur_ATK = new_ATK;}
 		void set_SPD(int new_SPD) 	  {Cur_SPD = new_SPD;}
 		void set_DEF(int new_DEF)     {Cur_DEF = new_DEF;}
-		
+
 		virtual void Choose_Target(Team &enemy_Team);       //Overloaded Choose Target because it kept messing up
 		virtual void Choose_Target(PlayerTeam &enemy_Team); 
 		virtual void Actions();
@@ -92,11 +94,13 @@ class Entity{															//Base class for all NPCs
 
 class Player : public Entity {										
     public:
-    	void Modify_Stat(int &stat, int amount, const string statName);
+    	void Change_Stat(int &stat, int amount, const string statName);
     	
     	void Choose_Target(Team &enemy_Team) override;		//Overridden methods
     	void Actions() override;
     	void Display_Stats() override;
+
+		void set_Player_Name();
     	
         Player()											
 		{
@@ -104,7 +108,8 @@ class Player : public Entity {
             Reset_Stats();
         }
 };
- 
+
+	//Teams
 class Team{																//Base Team class contains NPCS(Entities)
 	protected:
 		string name;
@@ -118,7 +123,7 @@ class Team{																//Base Team class contains NPCS(Entities)
 		void Run_For_All_Members(void (Entity::*method)()); 
 		void Display_Members();
 		
-		void Display_stats();
+		virtual void Display_stats();
 										//Getters
 		string get_Name() {	return(name);	};
 		int get_OVR();
@@ -128,8 +133,10 @@ class Team{																//Base Team class contains NPCS(Entities)
 		void add_Win() { wins++; };
 		void add_Loss() { losses++; };	
 		void reset_Stats();	
+
+		bool Has_Members_Alive();
 		
-		Team()							//Constructor
+		Team()						
 		{	
 			name = Team_name1[rand() % (sizeof(Team_name1) / sizeof(Team_name1[0]))] + Team_name2[rand() % (sizeof(Team_name2) / sizeof(Team_name2[0]))];	
 			get_OVR();
@@ -141,8 +148,13 @@ class PlayerTeam : public Team{ 										//Team Class contains PCs
 		Player Members[PLAYERS_PER_TEAM];	
 		
 		void Display_Members();
+		void Display_stats() override;
+
+		void set_Member_Name();
+		void set_Team_Name();
+		bool Has_Members_Alive();
 		
-        PlayerTeam() : Team()				//Constructor
+        PlayerTeam() : Team()				
 		{
 			for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
 			{
@@ -151,6 +163,7 @@ class PlayerTeam : public Team{ 										//Team Class contains PCs
 		}
 };
 
+	//The rest of the Classes
 class BattleManager{													//All Combat functions are contained here
 	public: 
 		static void Battle_Simulation(Team &team1, Team &team2);
@@ -161,8 +174,8 @@ class BattleManager{													//All Combat functions are contained here
 
 class Schedule{															//Sets the Matchups based on day contained in GameManager class
 	private:
-		int Day = 0;
-		int matchups[TOTAL_MATCHES][2] = {	{0,0}, {4, 3}, {1, 0} ,{2, 3}, {4, 0}, {0, 2}, {1, 3}, {4, 1}, {0, 3}, {1, 2}, {4, 2}};
+		int Day = 0;					//Maybe Ill add a function that automaically decides the matchups based on the number of teams? 
+		int matchups[TOTAL_MATCHES][2] = {	{0,0}, {4, 3}, {1, 0} ,{2, 3}, {4, 0}, {0, 2}, {1, 3}, {4, 1}, {0, 3}, {1, 2}, {4, 2}}; //0 is team at index 0... 4 is for player team
 		Team* teams;
 		PlayerTeam* playerTeam;
 	
@@ -173,7 +186,7 @@ class Schedule{															//Sets the Matchups based on day contained in Game
 
 		int get_Days() {   return Day;	}	
 		
-    Schedule(Team* teamsPtr, PlayerTeam* playerPtr) : teams(teamsPtr), playerTeam(playerPtr) {	Day = 0;	}
+    Schedule(Team* teamsPtr, PlayerTeam* playerPtr) : teams(teamsPtr), playerTeam(playerPtr) {	reset();	}
 };	
 
 class GameManager {														//Essentially the Main Game class
@@ -185,7 +198,7 @@ class GameManager {														//Essentially the Main Game class
     public:
     	void Run_For_All_Teams(void (Team::*method)()); 
     	void Display_Standings();
-    	void Display_Roster()  	 {Run_For_All_Teams(&Team::Display_Members); PC_Team.Display_Members();}; 
+    	void Display_Roster();
     	
     	void Run_Game();
     	void Management_Mode(); 
@@ -193,6 +206,7 @@ class GameManager {														//Essentially the Main Game class
     	void Trade();
     	void Reset_TeamStats(); 
 		void Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id);
+		void Select_Team_For_Trade(int Teamid);
     	
     	GameManager() : season(NPC_Teams, &PC_Team) {}
 };
@@ -204,3 +218,12 @@ class ConsoleManager {													//Handles UI and Static Methods
 		static void ClearScreen();
 		static void PrintManagementMenu();
 };
+
+//Utility Function
+template <typename T, typename Method>
+void Run_For_All(T* Array, int size, Method method) 
+{
+    for (int i = 0; i < size; i++) {
+        (Array[i].*method)();
+    }
+}

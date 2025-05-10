@@ -13,15 +13,21 @@ void Entity::generate_character(){
 	//Generates a random name 	
 	name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
 	
+	set_HP(15);
 	ATK = (rand() % 20) + 1;
 	SPD = (rand() % 10);
 	DEF = (rand() % 10);
 	
 };
-									
-void Entity::Reset_Stats(){		
+
+void Entity::set_HP(int new_HP) {
+	Cur_HP = new_HP;
+	Is_Alive = (Cur_HP > 0);
+}
+
+void Entity::Reset_Stats(){		//Defaults the stats
 	
-	Cur_HP = HP;
+	set_HP(HP);
 	Cur_ATK = ATK;
 	Cur_SPD = SPD;
 	Cur_DEF = DEF;
@@ -62,21 +68,20 @@ void Entity::Attack_Check(Entity &Target){
     //Damage calculation
     if (Hit_chance < Hit_threshold)
 	{
-		int damage = Cur_ATK - Target.get_Cur_DEF(); //int damage = max(0, ATK - target.DEF); is a proposed solution that could outright circumvent the negatives issue
-	
-		damage = max(0, damage); //in case damage gives a negative number
+		int damage = max(0,Cur_ATK - Target.get_Cur_DEF()); //in case damage gives a negative number
+
 		Target.set_HP(Target.get_Cur_HP() - damage);
 			
         Target.set_HP( (Target.get_Cur_HP() < 0) ? 0 : Target.get_Cur_HP() ); //Ensure HP does not go below 0
         
-		cout << name << "'s attack hits! Damage dealt: " << damage << "\n" << endl;
+		cout << name << "'s attack HITS! [Damage dealt: " << damage << "]\n" << endl;
 		PlaySoundEffect("attack");
 	}
 	
 	else
 	{	
 		SetColor(14); //Yellow for misses
-		cout << "The attack missed!" << endl;	
+		cout << "The attack MISSED!" << endl;	
 		PlaySoundEffect("miss");
 	}
 	
@@ -87,29 +92,28 @@ void Entity::Attack_Check(Entity &Target){
 void Entity::Choose_Target(PlayerTeam &enemy_Team){
 	
 	int target = rand() % (PLAYERS_PER_TEAM);
-	
+
 	if (target >= 0 && target < PLAYERS_PER_TEAM) 
-	{
-        Attack_Check(enemy_Team.Members[target]);
-    } 
+	{   Attack_Check(enemy_Team.Members[target]);	} 
 	
 	else 
-	{
-    	cout << "Invalid target! Turn wasted.\n";
-	}
+	{	cout << "Invalid target! Turn wasted.\n";	}
 }
 
-void Entity::Choose_Target(Team &enemy_Team) {
+void Entity::Choose_Target(Team &enemy_Team) {		//Isnt used anywhere anymore but it does make CPU vs CPU possible if I allow that in again
     int target = rand() % (PLAYERS_PER_TEAM);
     
     if (target >= 0 && target < PLAYERS_PER_TEAM) 
     {
         Attack_Check(enemy_Team.Members[target]);
     } 
+
     else 
-    {
-        cout << "Invalid target! Turn wasted.\n";
-    }
+    {	cout << "Invalid target! Turn wasted.\n";	}
+}
+
+bool Entity::get_Is_Alive() const {
+    return Cur_HP > 0; 
 }
 
 //Player Methods
@@ -158,19 +162,19 @@ void Player::Actions(){														//Calls all the available actions for the E
 		}
 				
         case SPD_UP:
-            Modify_Stat(Cur_SPD, 5, "SPD");
+            Change_Stat(Cur_SPD, 5, "SPD");
             break;
 
         case DEF_UP:
-            Modify_Stat(Cur_DEF, 5, "DEF");
+            Change_Stat(Cur_DEF, 5, "DEF");
             break;
 
         case ATK_UP:
-            Modify_Stat(Cur_ATK, 5, "ATK");
+            Change_Stat(Cur_ATK, 5, "ATK");
             break;
 
         case Heal:
-            Modify_Stat(Cur_HP, 30, "HP");
+            Change_Stat(Cur_HP, 20, "HP");
             break;
 
 		
@@ -192,29 +196,21 @@ void Player::Choose_Target(Team &enemy_Team){								//Called in Actions() it se
 	cout << "\nPlayer::Choose_target Operational\n" << endl;
 	#endif	
 	
-    int target;
-    cout << "Select a target:\n";
+    cout << "Select a target (Enter an Integer 1-3):\n";
     
-	#ifdef DEBUG
-	cout << "\nPlayer::Choose_Target displaying members\n" << endl;
-	#endif
-
 	enemy_Team.Display_Members();
 
+	int target;
 	cin >> target;
        
     if (target >= 1 && target <= PLAYERS_PER_TEAM	) 
-	{
-        Attack_Check(enemy_Team.Members[target - 1]);
-    } 
+	{	Attack_Check(enemy_Team.Members[target - 1]);	} //-1 because the player will input playerIDs starting from 1
 	
 	else 
-	{
-    	cout << "Invalid target! Turn wasted.\n";
-	}
+	{	cout << "Invalid target! Turn wasted.\n";	}
 }
 
-void Player::Modify_Stat(int &stat, int amount, const string statName) {
+void Player::Change_Stat(int &stat, int amount, const string statName) {
 	
     stat += amount;
     SetColor(10);
@@ -223,13 +219,21 @@ void Player::Modify_Stat(int &stat, int amount, const string statName) {
     SetColor(7);
 }
 
+void Player::set_Player_Name(){
+
+	cin.ignore();
+	cout << "\nInput Name: " << endl;
+	string temp_name;
+	getline(cin, temp_name);
+
+	cout << name << " is now called " << temp_name << endl;
+	name = temp_name;
+}
+
 //Team Methods
 void Team::Run_For_All_Members(void (Entity::*method)()) {
 	
-	for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
-	{
-        (Members[i].*method)();  // Call the function pointer on each memeber
-    }
+	Run_For_All(Members, PLAYERS_PER_TEAM, method);
 }
 
 void Team::Display_Members(){
@@ -256,7 +260,7 @@ int Team::get_OVR(){
 void Team::Display_stats(){
 
 	SetColor(3); //Cyan
-	cout << "Team: " << name << " wins: " << wins << " losses: " << losses << endl;
+	cout << "Team: " << name << " |wins: " << wins << " |losses: " << losses << endl;
 	SetColor(7); //White
 	cout << endl;
 
@@ -265,6 +269,14 @@ void Team::Display_stats(){
 void Team::reset_Stats(){
 	wins = 0;
 	losses = 0;
+}
+
+bool Team::Has_Members_Alive() {
+    for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+	{
+        if (Members[i].get_Is_Alive()) {return true; } // At least one member is alive
+    }
+    return false; 
 }
 
 //Player Team Methods
@@ -281,6 +293,49 @@ void PlayerTeam::Display_Members() {
 
 }
 
+void PlayerTeam::Display_stats() {
+
+	SetColor(6); //Yellow
+	cout << "Team: " << name << " |wins: " << wins << " |losses: " << losses << endl;
+	SetColor(7); //White
+	cout << endl;	
+}
+
+void PlayerTeam::set_Member_Name() {
+	
+	short id;
+	cout << "Select Which Characters name you wish to change (1-3)" << endl;
+	Display_Members();
+	cin >> id;
+
+	if (id <= 0 || id > PLAYERS_PER_TEAM)
+	{
+		cout << "Invalid Input! Enter a number between 1-4" << endl;
+		return;
+	}
+
+	Members[id-1].set_Player_Name();
+}
+
+void PlayerTeam::set_Team_Name() {
+
+	cin.ignore();
+	cout << "\nInput Name: " << endl;
+	string temp_name;
+	getline(cin, temp_name);
+
+	cout << name << " is now called " << temp_name << endl;
+	name = temp_name;
+}
+
+bool PlayerTeam::Has_Members_Alive(){
+    for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+	{
+        if (Members[i].get_Is_Alive()) {return true; } // At least one member is alive
+    }
+    return false; 
+}
+
 //Battle Manager Functions
 
 void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Player Controlled Team Battles
@@ -291,7 +346,7 @@ void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Play
 	
 	ConsoleManager::ClearScreen();
 
-    for (int i = 0; i < PLAYERS_PER_TEAM; i++) // Correctly assigns pointers and Resets stats
+    for (int i = 0; i < PLAYERS_PER_TEAM; i++) // Correctly assigns pointers for each member and Resets stats
 	{
 		PC_Team.Members[i].Reset_Stats();
 		Opposing_Team.Members[i].Reset_Stats();
@@ -311,8 +366,7 @@ void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Play
 	cout << "\n--- BATTLE BEGINS! ---\n";
     Sleep(1000);
 	
-	while ( (Opposing_Team.Members[0].get_Cur_HP() > 0 ||Opposing_Team.Members[1].get_Cur_HP() > 0 || Opposing_Team.Members[2].get_Cur_HP() > 0) 
-			&& (PC_Team.Members[0].get_Cur_HP() > 0 || PC_Team.Members[1].get_Cur_HP() > 0 || PC_Team.Members[2].get_Cur_HP() > 0) )
+	while ( PC_Team.Has_Members_Alive() && Opposing_Team.Has_Members_Alive() )
 	{
 		//Players Turn 
 		for (int i = 0; i < PLAYERS_PER_TEAM; i++)	
@@ -331,12 +385,12 @@ void BattleManager::PC_Battle(PlayerTeam &PC_Team, Team &Opposing_Team){		//Play
 	}
 	
 	//Win Loss states
-	if (Opposing_Team.Members[0].get_Cur_HP() <= 0 && Opposing_Team.Members[1].get_Cur_HP() <= 0 && Opposing_Team.Members[2].get_Cur_HP() <= 0)  //Win
+	if (!Opposing_Team.Has_Members_Alive())  //Win
 	{
 		Declare_Winner(PC_Team, Opposing_Team);	
 	}
 
-	else if (PC_Team.Members[0].get_Cur_HP() <= 0 && PC_Team.Members[1].get_Cur_HP() <= 0 && PC_Team.Members[2].get_Cur_HP() <= 0) //lose
+	else if (!PC_Team.Has_Members_Alive()) //lose
 	{	
 		Declare_Winner(Opposing_Team, PC_Team);	
 	}
@@ -354,13 +408,13 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {				//Battle Si
     team1.get_OVR(); 
     team2.get_OVR();
     
-    int victory_Threshold = 50 + team1.get_OVR() - team2.get_OVR();
+    int victory_Threshold = 50 + (team1.get_OVR() - team2.get_OVR());
     int team1_Victory = rand() % 100;
 
     if (team1_Victory > victory_Threshold) 
-	{	Declare_Winner(team1, team2);	} 
+	{	Declare_Winner(team1, team2);	} //Team1 Victory
 	else
-	{	Declare_Winner(team2, team1);	}
+	{	Declare_Winner(team2, team1);	} //Team2 Victory
 }
 
 void BattleManager::Declare_Winner(Team &winner, Team &loser){					//Print Winning Team message
@@ -385,7 +439,7 @@ void BattleManager::Display_Round_Summary(PlayerTeam &PC_Team, Team &Opposing_Te
 }
 
 //Schedule Methods 
-void Schedule::Matchup(){												//Cycles through matchups to begin matches
+void Schedule::Matchup(){												//Cycles through matchups to Select Matchups
 	
 	#ifdef DEBUG 
 	cout << "\nMatchup operational\n" << endl;
@@ -411,6 +465,7 @@ void Schedule::Matchup(){												//Cycles through matchups to begin matches
     if (teamA == 4) 					// If teamA is the PlayerTeam
 	{  
         cout << playerTeam->get_Name() << " vs " << teams[teamB].get_Name() << "\n";
+		Sleep(1000);
         BattleManager::PC_Battle(*playerTeam, teams[teamB]);
     } 
     else if (teamB == 4) 				// If teamB is the PlayerTeam
@@ -428,6 +483,7 @@ void Schedule::Matchup(){												//Cycles through matchups to begin matches
 }
 
 void Schedule::Print_Schedule(){
+
 	cout << "The Schedule is:\n " << endl;
 
 	SetColor(5); //Pruple
@@ -443,18 +499,25 @@ void Schedule::Print_Schedule(){
 }
 
 //Game Manager Methods
+void GameManager::Display_Roster() {
+	cout << "=========|Teams|===========" << endl;
+	Run_For_All_Teams(&Team::Display_Members); PC_Team.Display_Members();
+}
+
 void GameManager::Run_For_All_Teams(void (Team::*method)()) {
 	
-    for (int i = 0; i < NUMBER_OF_TEAMS; i++) 
-	{
-        (NPC_Teams[i].*method)();  // Call the function pointer on each team
-    }
-	   
+	Run_For_All(NPC_Teams, NUMBER_OF_TEAMS, method);
 }
 
 void GameManager::Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int playerB_id) {	
-		
-    if (teamA_id >= NUMBER_OF_TEAMS || teamB_id >= NUMBER_OF_TEAMS || playerA_id >= PLAYERS_PER_TEAM || playerB_id >= PLAYERS_PER_TEAM) //Error
+	
+	if (teamA_id == 5 || teamB_id == 5)
+	{
+		cout << "You cannot trade with your own team" << endl;
+		return;
+	}
+
+    else if (teamA_id >= NUMBER_OF_TEAMS || teamB_id >= NUMBER_OF_TEAMS || playerA_id >= PLAYERS_PER_TEAM || playerB_id >= PLAYERS_PER_TEAM) //Error
 	{
         cout << "Invalid indices. Swap failed" << endl;
         return;
@@ -472,26 +535,35 @@ void GameManager::Swap_Entities(int teamA_id, int playerA_id, int teamB_id, int 
 	SetColor(7); //Reset to white
 }
 
+void GameManager::Select_Team_For_Trade(int Teamid){			//Just exists to make the trade function cleaner
+
+	if (Teamid == 5)
+	{	PC_Team.Display_Members();	}
+
+	else 
+	{	NPC_Teams[Teamid-1].Display_Members();	}
+}
+
 void GameManager::Trade(){											//Chooses the parameters for swaping entities (Accessed from Management Mode) 
 	
 	#ifdef DEBUG
 	cout << "\nTrade Operational\n" << endl;
 	#endif
-	
-	ConsoleManager::ClearScreen();
+
+	cout << "------------------------------------------------------" << endl;
 
 	int teamA_id, playerA_id, teamB_id, playerB_id;
 	
 	cout << "Choose the team you wnat to trade a player from " << endl;
 	cin >> teamA_id;
-	NPC_Teams[teamA_id-1].Display_Members();
+	Select_Team_For_Trade(teamA_id);
 	
 	cout << "Choose the player ID you want to trade " << endl;
 	cin >> playerA_id;
 	
-	cout << "Choose the team you wnat to trade a player to " << endl;
+	cout << "Choose the team you want to trade a player to " << endl;
 	cin >> teamB_id;
-	NPC_Teams[teamB_id-1].Display_Members();
+	Select_Team_For_Trade(teamB_id);
 	
 	cout << "Choose the player ID you want to trade " << endl;
 	cin >> playerB_id;	
@@ -529,13 +601,13 @@ void GameManager::Run_Game(){											//Check numbers of days remaining in the
 void GameManager::Management_Mode(){									//Options in between matches and match simulations
 	
 	int input, loop = 1; 
-	enum Actions{SIM_DAY = 1, STANDINGS, ROSTERS, TRADE, SCHEDULE};
+	enum Actions{SIM_DAY = 5, STANDINGS = 2, ROSTERS = 1, TRADE = 4, SCHEDULE = 3, CHANGE_CHARACTER_NAME = 6, CHANGE_TEAM_NAME = 7};
 		
 	do{
 		ConsoleManager::PrintManagementMenu();
 		cin >> input;
 		
-		switch(input)
+		switch(input)			//They say nobody uses switch anymore but I have no idea what the alternative is 
 		{				
 			case SIM_DAY:
 			{
@@ -545,6 +617,7 @@ void GameManager::Management_Mode(){									//Options in between matches and ma
 			
 			case STANDINGS:
 			{	
+				ConsoleManager::ClearScreen();
 				Display_Standings();
 				break;
 			}
@@ -558,13 +631,30 @@ void GameManager::Management_Mode(){									//Options in between matches and ma
 			
 			case TRADE:
 			{
+				ConsoleManager::ClearScreen();
+				Display_Roster();
 				Trade();
 				break;
 			}
 
 			case SCHEDULE:
 			{	
+				ConsoleManager::ClearScreen();
 				season.Print_Schedule();
+				break;
+			}
+
+			case CHANGE_CHARACTER_NAME:
+			{
+				ConsoleManager::ClearScreen();
+				PC_Team.set_Member_Name();
+				break;
+			}
+
+			case CHANGE_TEAM_NAME:
+			{
+				ConsoleManager::ClearScreen();
+				PC_Team.set_Team_Name();
 				break;
 			}
 			
@@ -599,10 +689,9 @@ void GameManager::Final(){
     Sleep(1000); 	
 	
 	BattleManager::Battle_Simulation(NPC_Teams[Finalist1_index], NPC_Teams[Finalist2_index]);
-	
 }
 
-//Console Manager Functions
+//Console Manager Functions	
 void ConsoleManager::PrintTitle(){
 
 	SetColor(6); //Yellow
@@ -639,11 +728,13 @@ void ConsoleManager::PrintManagementMenu(){
     cout << "====================================" << endl;
     cout << "       	Management MENU       " << endl;
     cout << "====================================" << endl;
-	cout << "1. Simulate to next Day" << endl;
+	cout << "1. Show Rosters" << endl;
     cout << "2. Show Standings (Wins/Losses)" << endl;
-    cout << "3. Show Rosters" << endl;
+    cout << "3. Show Schedule" << endl;
     cout << "4. Make Trades" << endl;
-	cout << "5. Show Schedule" << endl;
+	cout << "5. Simulate to next Day" << endl;
+	cout << "6. Change Players Names" << endl;
+	cout << "7. Change Teams Name" << endl;
     cout << "====================================" << endl;
 	
 }
