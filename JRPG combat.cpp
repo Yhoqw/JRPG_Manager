@@ -13,7 +13,6 @@ void Entity::generate_character(){
 	//Generates a random name 	
 	name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
 	
-	set_HP(15);
 	ATK = (rand() % 20) + 1;
 	SPD = (rand() % 10);
 	DEF = (rand() % 10);
@@ -36,7 +35,7 @@ void Entity::Reset_Stats(){		//Defaults the stats
 										
 void Entity::Actions(){
 
-	if (Cur_HP <= 0)	{	return;	}	//Skip turn if dead	
+	if (!get_Is_Alive())	{	return;	}	//Skip turn if dead	
 	
 	else
 	{	

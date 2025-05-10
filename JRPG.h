@@ -48,7 +48,7 @@ class Entity{															//Base class for all NPCs
 	protected:
 		string name;	
 		bool Is_Alive;
-		int HP, ATK, SPD, DEF;
+		int HP = 15, ATK, SPD, DEF;
 		int Cur_HP = HP, Cur_ATK = ATK, Cur_SPD = SPD, Cur_DEF = DEF;
 		
 	public:
