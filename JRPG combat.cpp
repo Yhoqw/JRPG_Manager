@@ -4,18 +4,18 @@
 void Entity::Display_Stats(){
 	
 	SetColor(11); // Light cyan for stats
-	cout << name << " |HP: " << Cur_HP << "/" << HP << ", ATK: " << Cur_ATK << ", SPD: " << Cur_SPD << ", DEF: " << Cur_DEF << endl;
+	cout << Name << " |HP: " << Cur_HP << "/" << HP << "| ATK: " << Cur_ATK << "| SPD: " << Cur_SPD << "| DEF: " << Cur_DEF << endl;
 	SetColor(7); //Reset to white		
 };
 
-void Entity::generate_character(){
+void Entity::Generate_Character(){
 
 	//Generates a random name 	
-	name = first_names[rand() % (sizeof(first_names) / sizeof(first_names[0]))] + last_names[rand() % (sizeof(last_names) / sizeof(last_names[0]))] ;
+	Name = First_Names[rand() % (sizeof(First_Names) / sizeof(First_Names[0]))] + Last_Names[rand() % (sizeof(Last_Names) / sizeof(Last_Names[0]))] ;
 	
-	ATK = (rand() % 20) + 1;
-	SPD = (rand() % 10);
-	DEF = (rand() % 10);
+	ATK = (rand() % MAX_ATK) + 1;
+	SPD = (rand() % MAX_SPD);
+	DEF = (rand() % MAX_DEF);
 	
 };
 
@@ -61,7 +61,7 @@ void Entity::Attack_Check(Entity &Target){
     int Hit_threshold = 100 - Target.get_SPD(); 
     
     SetColor(12); //Red for attack messages  
-    cout << name << " Attacks " << Target.get_Name() << endl; 
+    cout << Name << " Attacks " << Target.get_Name() << endl; 
 	Sleep(200); //Reduced delay for impact
     
     //Damage calculation
@@ -73,7 +73,7 @@ void Entity::Attack_Check(Entity &Target){
 			
         Target.set_HP( (Target.get_Cur_HP() < 0) ? 0 : Target.get_Cur_HP() ); //Ensure HP does not go below 0
         
-		cout << name << "'s attack HITS! [Damage dealt: " << damage << "]\n" << endl;
+		cout << Name << "'s attack HITS! [Damage dealt: " << damage << "]\n" << endl;
 		PlaySoundEffect("attack");
 	}
 	
@@ -88,24 +88,29 @@ void Entity::Attack_Check(Entity &Target){
 	Sleep(200);
 }
 
-void Entity::Choose_Target(PlayerTeam &enemy_Team){
-	
-	int target = rand() % (PLAYERS_PER_TEAM);
+void Entity::Choose_Target(PlayerTeam &enemy_Team) {
 
-	if (target >= 0 && target < PLAYERS_PER_TEAM) 
-	{   Attack_Check(enemy_Team.Members[target]);	} 
-	
-	else 
-	{	cout << "Invalid target! Turn wasted.\n";	}
+	if (!enemy_Team.Has_Members_Alive()) 
+	{
+        cout << "No valid targets! Enemy team has no alive members.\n";
+        return; 
+    }
+
+    int target;
+    do 
+	{
+        target = rand() % PLAYERS_PER_TEAM;
+    } 
+	while (!enemy_Team.Members[target].get_Is_Alive()); // Skip dead members
+
+    Attack_Check(enemy_Team.Members[target]);
 }
 
 void Entity::Choose_Target(Team &enemy_Team) {		//Isnt used anywhere anymore but it does make CPU vs CPU possible if I allow that in again
     int target = rand() % (PLAYERS_PER_TEAM);
     
     if (target >= 0 && target < PLAYERS_PER_TEAM) 
-    {
-        Attack_Check(enemy_Team.Members[target]);
-    } 
+    {   Attack_Check(enemy_Team.Members[target]);	} 
 
     else 
     {	cout << "Invalid target! Turn wasted.\n";	}
@@ -116,10 +121,10 @@ bool Entity::get_Is_Alive() const {
 }
 
 //Player Methods
-void Player::Display_Stats() {
+void Player::Display_Stats() { //In hindsight I could have just taken colour as a parameter
 	
     SetColor(10); // Green for player stats (to distinguish them)
-    cout << name << " |HP: " << Cur_HP << "/" << HP << ", ATK: " << Cur_ATK << ", SPD: " << Cur_SPD << ", DEF: " << Cur_DEF << endl;
+    cout << Name << " |HP: " << Cur_HP << "/" << HP << "| ATK: " << Cur_ATK << "| SPD: " << Cur_SPD << "| DEF: " << Cur_DEF << endl;
     SetColor(7); //Reset to white
 }
 
@@ -129,7 +134,7 @@ void Player::Actions(){														//Calls all the available actions for the E
 	cout << "\nPlayer::Actions() operational\n" << endl;
 	#endif	
 	
-	if (Cur_HP <= 0)
+	if (!get_Is_Alive())
 	{	return;	} 		//Skip turn if dead	
 	
 	Display_Stats();
@@ -196,14 +201,20 @@ void Player::Choose_Target(Team &enemy_Team){								//Called in Actions() it se
 	#endif	
 	
     cout << "Select a target (Enter an Integer 1-3):\n";
-    
-	enemy_Team.Display_Members();
+    enemy_Team.Display_Members();
 
 	int target;
 	cin >> target;
        
     if (target >= 1 && target <= PLAYERS_PER_TEAM	) 
-	{	Attack_Check(enemy_Team.Members[target - 1]);	} //-1 because the player will input playerIDs starting from 1
+	{	
+		if (!enemy_Team.Members[target - 1].get_Is_Alive())
+		{
+			cout << "Target is already dead! Turn wasted.\n";
+            return;
+		}
+		Attack_Check(enemy_Team.Members[target - 1]);	//-1 because the player will input playerIDs starting from 1
+	} 
 	
 	else 
 	{	cout << "Invalid target! Turn wasted.\n";	}
@@ -225,8 +236,8 @@ void Player::set_Player_Name(){
 	string temp_name;
 	getline(cin, temp_name);
 
-	cout << name << " is now called " << temp_name << endl;
-	name = temp_name;
+	cout << Name << " is now called " << temp_name << endl;
+	Name = temp_name;
 }
 
 //Team Methods
@@ -289,7 +300,6 @@ void PlayerTeam::Display_Members() {
 	{
         Members[i].Display_Stats();
 	}
-
 }
 
 void PlayerTeam::Display_stats() {
@@ -419,7 +429,7 @@ void BattleManager::Battle_Simulation(Team &team1, Team &team2) {				//Battle Si
 void BattleManager::Declare_Winner(Team &winner, Team &loser){					//Print Winning Team message
 	
 	SetColor(10); // Green 
-    cout << "\n" << winner.get_Name() << " win!\n" << endl;
+    cout << "\n" << winner.get_Name() << " WIN!\n" << endl;
     SetColor(7); //Reset to white	
 
     winner.add_Win();
@@ -489,10 +499,10 @@ void Schedule::Print_Schedule(){
 
 	for (int i = 1; i < TOTAL_MATCHES; i++)
 	{
-		cout << "Day " << (i + 1) << ": " << teams[matchups[i][0]].get_Name() << " vs " << teams[matchups[i][1]].get_Name() << endl;
+		cout << "Day " << (i + 1) << ": [" << teams[matchups[i][0]].get_Name() << "] vs [" << teams[matchups[i][1]].get_Name() << "]" << endl;
 	}
 
-	SetColor(7);
+	SetColor(7);	
 
 	cout << endl;
 }
@@ -553,18 +563,18 @@ void GameManager::Trade(){											//Chooses the parameters for swaping entiti
 
 	int teamA_id, playerA_id, teamB_id, playerB_id;
 	
-	cout << "Choose the team you wnat to trade a player from " << endl;
+	cout << "Choose the team you wnat to trade a player from (1-4)" << endl;
 	cin >> teamA_id;
 	Select_Team_For_Trade(teamA_id);
 	
-	cout << "Choose the player ID you want to trade " << endl;
+	cout << "Choose the player ID you want to trade (1-3)" << endl;
 	cin >> playerA_id;
 	
-	cout << "Choose the team you want to trade a player to " << endl;
+	cout << "Choose the team you want to trade a player to (1-4)" << endl;
 	cin >> teamB_id;
 	Select_Team_For_Trade(teamB_id);
 	
-	cout << "Choose the player ID you want to trade " << endl;
+	cout << "Choose the player ID you want to trade (1-3)" << endl;
 	cin >> playerB_id;	
 	
 	Swap_Entities(teamA_id-1, playerA_id-1, teamB_id-1, playerB_id-1);
@@ -658,13 +668,14 @@ void GameManager::Management_Mode(){									//Options in between matches and ma
 			}
 			
 			default:
+			    cout << "Invalid choice! Please try again. \n" << endl;
 				break;
 		}
 	} while (loop != 0);	
 }
 
 void GameManager::Final(){
-	
+
 	#ifdef DEBUG
 	cout << "\nFinals operational\n" << endl;
 	#endif	
@@ -683,11 +694,30 @@ void GameManager::Final(){
 		else if(NPC_Teams[i].get_Wins() > NPC_Teams[Finalist2_index].get_Wins() && Finalist1_index != i)
 			{	Finalist2_index = i;	}
 	} 
+
+	// Check if the player's team qualifies for the finals
+    if (PC_Team.get_Wins() > NPC_Teams[Finalist1_index].get_Wins()) 
+	{
+        cout << PC_Team.get_Name() << " vs " << NPC_Teams[Finalist1_index].get_Name() << "\n" << endl;
+    	Sleep(1000); 	
 	
-    cout << NPC_Teams[Finalist1_index].get_Name() << " vs " << NPC_Teams[Finalist2_index].get_Name() << "\n" << endl;
-    Sleep(1000); 	
+		BattleManager::PC_Battle(PC_Team, NPC_Teams[Finalist1_index]);
+    } 
+	else if (PC_Team.get_Wins() > NPC_Teams[Finalist2_index].get_Wins()) 
+	{
+	    cout << PC_Team.get_Name() << " vs " << NPC_Teams[Finalist1_index].get_Name() << "\n" << endl;
+    	Sleep(1000); 	
 	
-	BattleManager::Battle_Simulation(NPC_Teams[Finalist1_index], NPC_Teams[Finalist2_index]);
+		BattleManager::PC_Battle(PC_Team, NPC_Teams[Finalist1_index]);
+	}
+
+	else
+	{
+    	cout << NPC_Teams[Finalist1_index].get_Name() << " vs " << NPC_Teams[Finalist2_index].get_Name() << "\n" << endl;
+    	Sleep(1000); 	
+	
+		BattleManager::Battle_Simulation(NPC_Teams[Finalist1_index], NPC_Teams[Finalist2_index]);
+	}
 }
 
 //Console Manager Functions	
@@ -744,9 +774,9 @@ int main(){
 	#ifdef DEBUG
 	cout << "\ndebugging operational\n" << endl;
 	#endif
-	
-	GameManager GM;
+
 	srand(static_cast<unsigned int>(time(0)));	//for seeding
+	GameManager GM;
 		
 	ConsoleManager::PrintTitle(); 
 	
