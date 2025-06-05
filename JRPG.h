@@ -1,13 +1,19 @@
+#pragma once
 #include <iostream>
 #include <windows.h>
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <vector>
+
+//TODO:
+// Replace with Vectors (Team Member arrays, NPC Team array, Matchups array)
+// Store Name vectors in Json file
 
 using namespace std;
 //Project By Yazdan Ali Khan (2024665), Hammad Shahid (2024389)
 
-//#define DEBUG  // Comment this line to disable debug messages
+#define DEBUG  // Comment this line to disable debug messages
 
 //Windows .h 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -17,17 +23,18 @@ void SetColor(int color)
 
 void PlaySoundEffect(const string &effect) 
 {
-	if (effect == "attack") Beep(800, 400); // Parameters take frequency and duration
+	// Parameters take frequency and duration
+	if (effect == "attack") Beep(800, 400); 	
     else if (effect == "miss") Beep(300, 200);
     else if (effect == "buff") Beep(700, 200);
 }
 
 //Variables Arrays and constants (Dont mind the names these are taken from a list of popular JRPGs)
-string First_Names[] = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
-string Last_Names[] = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi", " Lion-Heart" };
+inline vector<string> First_Names = {"Rei", "Kai", "Akira", "Shiro", "Kris", "Ren", "Ash", "Taro", "Luca ", "Raven", "Skyler", "Noa", "Sage", "Shin", "Jin"};
+inline vector<string> Last_Names = {" Van Damme", " Dimitrescu", " Lynx", " Kitagawa", " Crescent", " Reynolds", " Tatsumi", " Yamada", " Miyamoto", " Sakamoto", " Dracula", " Kazama", " Kisaragi", " Lion-Heart" };
 
-string Team_Name1[] = {"Midgard", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum", "Asgard"};
-string Team_Name2[] = {" Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
+inline vector<string> Team_Name1 = {"Midgard", "Zanarkand", "Palmacosta", "Alcamoth", "Tortuga", "Shevat", "Gilito", "Lindblum", "Asgard"};
+inline vector<string> Team_Name2 = {" Blades", " Sentinels", " Vanguard", " Covenant", " Syndicate", " Stormbringers", " Knights", " Abysswalkers", " Pact"};
 
 const int NUMBER_OF_TEAMS = 4, PLAYERS_PER_TEAM = 3, TOTAL_MATCHES = 11; //I could use #define for this instead lol
 const int MAX_ATK = 20, MAX_SPD = 10, MAX_DEF = 10, MAX_HP = 15; //Max stats for the entities
@@ -55,7 +62,7 @@ class Entity{															//Base class for all NPCs
 	public:
 		void* Opposing_TeamPtr = nullptr;
 		
-		virtual void Display_Stats();	
+		virtual void Display_Stats(int color);	//11 for entity, 10 for player
 		void Generate_Character();
 		void Reset_Stats();
 		void Attack_Check(Entity &Target);
@@ -98,7 +105,6 @@ class Player : public Entity {
     	
     	void Choose_Target(Team &enemy_Team) override;		//Overridden methods
     	void Actions() override;
-    	void Display_Stats() override;
 
 		void set_Player_Name();
     	
@@ -138,7 +144,7 @@ class Team{																//Base Team class contains NPCS(Entities)
 		
 		Team()						
 		{	
-			name = Team_Name1[rand() % (sizeof(Team_Name1) / sizeof(Team_Name1[0]))] + Team_Name2[rand() % (sizeof(Team_Name2) / sizeof(Team_Name2[0]))];	
+			name = 	Team_Name1[rand() % Team_Name1.size()] + Team_Name2[rand() % Team_Name2.size()];
 			get_OVR();
 		}
 };

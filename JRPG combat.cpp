@@ -1,9 +1,9 @@
 #include "JRPG.h"
 
 //Entity Methods
-void Entity::Display_Stats(){
+void Entity::Display_Stats(int color){
 	
-	SetColor(11); // Light cyan for stats
+	SetColor(color); // Light cyan for stats
 	cout << Name << " |HP: " << Cur_HP << "/" << HP << "| ATK: " << Cur_ATK << "| SPD: " << Cur_SPD << "| DEF: " << Cur_DEF << endl;
 	SetColor(7); //Reset to white		
 };
@@ -11,7 +11,7 @@ void Entity::Display_Stats(){
 void Entity::Generate_Character(){
 
 	//Generates a random name 	
-	Name = First_Names[rand() % (sizeof(First_Names) / sizeof(First_Names[0]))] + Last_Names[rand() % (sizeof(Last_Names) / sizeof(Last_Names[0]))] ;
+	Name = First_Names[rand() % First_Names.size()] + Last_Names[rand() % Last_Names.size()];
 	
 	ATK = (rand() % MAX_ATK) + 1;
 	SPD = (rand() % MAX_SPD);
@@ -39,7 +39,7 @@ void Entity::Actions(){
 	
 	else
 	{	
-		Display_Stats();
+		Display_Stats(11);
 
     	if (Opposing_TeamPtr) 
 		{
@@ -121,13 +121,6 @@ bool Entity::get_Is_Alive() const {
 }
 
 //Player Methods
-void Player::Display_Stats() { //In hindsight I could have just taken colour as a parameter
-	
-    SetColor(10); // Green for player stats (to distinguish them)
-    cout << Name << " |HP: " << Cur_HP << "/" << HP << "| ATK: " << Cur_ATK << "| SPD: " << Cur_SPD << "| DEF: " << Cur_DEF << endl;
-    SetColor(7); //Reset to white
-}
-
 void Player::Actions(){														//Calls all the available actions for the Entity
 	
 	#ifdef DEBUG
@@ -137,7 +130,7 @@ void Player::Actions(){														//Calls all the available actions for the E
 	if (!get_Is_Alive())
 	{	return;	} 		//Skip turn if dead	
 	
-	Display_Stats();
+	Display_Stats(10);
 	int input;
 	
 	//Define availaible actions
@@ -252,7 +245,8 @@ void Team::Display_Members(){
 	cout << name << ": " << endl;
 	SetColor(7); //White
 	
-	Run_For_All_Members(&Entity::Display_Stats);
+	for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
+	{	Members[i].Display_Stats(11); }
 
     cout << endl;
 };
@@ -298,7 +292,7 @@ void PlayerTeam::Display_Members() {
 
 	for (int i = 0; i < PLAYERS_PER_TEAM; i++) 
 	{
-        Members[i].Display_Stats();
+        Members[i].Display_Stats(10);
 	}
 }
 
