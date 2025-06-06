@@ -139,7 +139,14 @@ void Player::Actions(){														//Calls all the available actions for the E
 	
 	ConsoleManager::PrintMenu();
 
-	cin >> input;	
+	do{												//Input validation
+		while (!(cin >> input)) 
+		{  
+  			cout << "Invalid input. Try again: ";
+  			cin.clear(); 
+  			cin.ignore(10000, '\n');
+		}
+	}	while (input < 1 || input > 5);
 
 	switch (input)
 	{
@@ -460,8 +467,8 @@ void Schedule::Matchup(){												//Cycles through matchups to Select Matchup
     	return;
 	}
 	
-    int teamA = matchups[Day][0];
-    int teamB = matchups[Day][1];
+    int teamA = matchups[Day].first;
+    int teamB = matchups[Day].second;
 
     cout << "\nDay " << (Day) << ": "; 
     
@@ -493,7 +500,7 @@ void Schedule::Print_Schedule(){
 
 	for (int i = 1; i < TOTAL_MATCHES; i++)
 	{
-		cout << "Day " << (i + 1) << ": [" << teams[matchups[i][0]].get_Name() << "] vs [" << teams[matchups[i][1]].get_Name() << "]" << endl;
+		cout << "Day " << (i + 1) << ": [" << teams[matchups[i].first].get_Name() << "] vs [" << teams[matchups[i].second].get_Name() << "]" << endl;
 	}
 
 	SetColor(7);	
@@ -608,7 +615,15 @@ void GameManager::Management_Mode(){									//Options in between matches and ma
 		
 	do{
 		ConsoleManager::PrintManagementMenu();
-		cin >> input;
+
+		do{												//Input validation
+			while (!(cin >> input)) 
+			{  
+  				cout << "Invalid input. Try again: ";
+  				cin.clear(); 
+  				cin.ignore(10000, '\n');
+			}
+		}	while (input < 1 || input > 7);
 		
 		switch(input)			//They say nobody uses switch anymore but I have no idea what the alternative is 
 		{				
@@ -718,16 +733,16 @@ void GameManager::Final(){
 void ConsoleManager::PrintTitle(){
 
 	SetColor(6); //Yellow
-	cout<<"::::::::::: :::::::::  :::::::::       ::::    ::::      :::     ::::    :::     :::      ::::::::  :::::::::: :::::::::"<<endl;
-	cout<<"    :+:     :+:    :+: :+:    :+:      +:+:+: :+:+:+   :+: :+:   :+:+:   :+:   :+: :+:   :+:    :+: :+:        :+:    :+:"<<endl;
-	cout<<"    +:+     +:+    +:+ +:+    +:+      +:+ +:+:+ +:+  +:+   +:+  :+:+:+  +:+  +:+   +:+  +:+        +:+        +:+    +:+ "<<endl;
-	cout<<"    +#+     +#++:++#:  +#++:++#+       +#+  +:+  +#+ +#++:++#++: +#+ +:+ +#+ +#++:++#++: :#:        +#++:++#   +#++:++#:"<<endl;
-	cout<<"    +#+     +#+    +#+ +#+             +#+       +#+ +#+     +#+ +#+  +#+#+# +#+     +#+ +#+   +#+# +#+        +#+    +#+"<<endl;
-	cout<<"#+# #+#     #+#    #+# #+#             #+#       #+# #+#     #+# #+#   #+#+# #+#     #+# #+#    #+# #+#        #+#    #+#"<<endl;
-	cout<<" #####      ###    ### ###             ###       ### ###     ### ###    #### ###     ###  ########  ########## ###    ### "<<endl;
+	cout<<"::::::::::: :::::::::  :::::::::   ::::::::       ::::    ::::      :::     ::::    :::     :::      ::::::::  :::::::::: :::::::::  "<<endl;
+	cout<<"    :+:     :+:    :+: :+:    :+: :+:    :+:      +:+:+: :+:+:+   :+: :+:   :+:+:   :+:   :+: :+:   :+:    :+: :+:        :+:    :+: "<<endl;
+	cout<<"    +:+     +:+    +:+ +:+    +:+ +:+             +:+ +:+:+ +:+  +:+   +:+  :+:+:+  +:+  +:+   +:+  +:+        +:+        +:+    +:+ "<<endl;
+	cout<<"    +#+     +#++:++#:  +#++:++#+  :#:             +#+  +:+  +#+ +#++:++#++: +#+ +:+ +#+ +#++:++#++: :#:        +#++:++#   +#++:++#:  "<<endl;
+	cout<<"    +#+     +#+    +#+ +#+        +#+   +#+#      +#+       +#+ +#+     +#+ +#+  +#+#+# +#+     +#+ +#+   +#+# +#+        +#+    +#+ "<<endl;
+	cout<<"#+# #+#     #+#    #+# #+#        #+#    #+#      #+#       #+# #+#     #+# #+#   #+#+# #+#     #+# #+#    #+# #+#        #+#    #+# "<<endl;
+	cout<<" #####      ###    ### ###         ########       ###       ### ###     ### ###    #### ###     ###  ########  ########## ###    ### "<<endl;
 	SetColor(7); //Reset to white
 	cout<<"__________________________________________________________________________________________________________________________"<<endl;		
-	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams and 1 player team they will play each other in simulations of JRPG style \ncombat (3 vs 3 combat where one team makes all its moves in one turn then the CPU makes its moves) by the end of the season, 2 teams will play a final to pick a winner. " << endl;
+	cout << "Welcome to RPG manager! This is a blend of sport sims and JRPGs. This program currently generates 4 Teams and 1 player team they will play each other in\nsimulations of JRPG style combat (3 vs 3 combat where one team makes all its moves in one turn then the CPU makes its moves) by the end of the season, 2\nteams will play a final to pick a winner. " << endl;
 }
 
 void ConsoleManager::PrintMenu() {

@@ -5,15 +5,16 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <utility>
 
 //TODO:
-// Replace with Vectors (Team Member arrays, NPC Team array, Matchups array)
+// Replace with Vectors (Team Member arrays, NPC Team array)
 // Store Name vectors in Json file
 
 using namespace std;
 //Project By Yazdan Ali Khan (2024665), Hammad Shahid (2024389)
 
-#define DEBUG  // Comment this line to disable debug messages
+//#define DEBUG  // Comment this line to disable debug messages
 
 //Windows .h 
 HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -181,7 +182,7 @@ class BattleManager{													//All Combat functions are contained here
 class Schedule{															//Sets the Matchups based on day contained in GameManager class
 	private:
 		int Day = 0;					//Maybe Ill add a function that automaically decides the matchups based on the number of teams? 
-		int matchups[TOTAL_MATCHES][2] = {	{0,0}, {4, 3}, {1, 0} ,{2, 3}, {4, 0}, {0, 2}, {1, 3}, {4, 1}, {0, 3}, {1, 2}, {4, 2}}; //0 is team at index 0, 1 at index 1... 4 is for player team
+		vector<pair<int, int>> matchups = {	{0,0}, {4, 3}, {1, 0} ,{2, 3}, {4, 0}, {0, 2}, {1, 3}, {4, 1}, {0, 3}, {1, 2}, {4, 2}}; //0 is team at index 0, 1 at index 1... 4 is for player team
 		Team* teams;
 		PlayerTeam* playerTeam;
 	
